@@ -3,6 +3,7 @@
 import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { GlobalFilters } from "@/components/global-filters"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid } from "recharts"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
@@ -48,9 +49,46 @@ export default function CptAnalysisPage() {
 
     const topCpts = cptStats.slice(0, 15)
 
+    const targetRef = React.useRef<HTMLDivElement>(null)
+    const [isExporting, setIsExporting] = React.useState(false)
+
+    const exportPdf = async () => {
+        if (!targetRef.current) return
+        setIsExporting(true)
+        try {
+            const html2canvas = (await import('html2canvas')).default
+            const { jsPDF } = await import('jspdf')
+
+            const canvas = await html2canvas(targetRef.current, {
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                backgroundColor: document.documentElement.classList.contains('dark') ? '#020817' : '#ffffff'
+            })
+
+            const imgData = canvas.toDataURL('image/jpeg', 1.0)
+            const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' })
+
+            const pdfWidth = pdf.internal.pageSize.getWidth()
+            const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+
+            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+            pdf.save('CPT-Analysis.pdf')
+        } catch (err) {
+            console.error("Failed to export PDF", err)
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight">CPT Analysis</h1>
+        <div className="p-6 max-w-7xl mx-auto space-y-6" ref={targetRef}>
+            <div className="flex items-center justify-between print:hidden">
+                <h1 className="text-3xl font-bold tracking-tight">CPT Analysis</h1>
+                <Button onClick={exportPdf} disabled={isExporting} variant="outline" size="sm">
+                    {isExporting ? "Exporting..." : "Download PDF"}
+                </Button>
+            </div>
             <GlobalFilters />
 
             <Card className="flex flex-col">

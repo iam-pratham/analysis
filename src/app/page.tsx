@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { FileText, ShieldAlert, CheckCircle, AlertOctagon } from "lucide-react"
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { Button } from "@/components/ui/button"
 
 const chartConfig = {
   value: {
@@ -77,10 +78,49 @@ export default function DashboardPage() {
     )
   } satisfies ChartConfig;
 
+  const targetRef = React.useRef<HTMLDivElement>(null)
+  const [isExporting, setIsExporting] = React.useState(false)
+
+  const exportPdf = async () => {
+    if (!targetRef.current) return
+    setIsExporting(true)
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const { jsPDF } = await import('jspdf')
+
+      const canvas = await html2canvas(targetRef.current, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: document.documentElement.classList.contains('dark') ? '#020817' : '#ffffff'
+      })
+
+      const imgData = canvas.toDataURL('image/jpeg', 1.0)
+      const pdf = new jsPDF({
+        orientation: 'p',
+        unit: 'mm',
+        format: 'a4'
+      })
+
+      const pdfWidth = pdf.internal.pageSize.getWidth()
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width
+
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
+      pdf.save('Dashboard-Report.pdf')
+    } catch (err) {
+      console.error("Failed to export PDF", err)
+    } finally {
+      setIsExporting(false)
+    }
+  }
+
   return (
-    <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="p-6 max-w-7xl mx-auto space-y-6" ref={targetRef}>
+      <div className="flex items-center justify-between print:hidden">
         <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <Button onClick={exportPdf} disabled={isExporting} variant="outline" size="sm">
+          {isExporting ? "Exporting..." : "Download PDF"}
+        </Button>
       </div>
 
       <GlobalFilters />
