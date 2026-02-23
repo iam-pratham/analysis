@@ -26,6 +26,7 @@ export default function ProviderPage() {
     const providerVolumeMap: Record<string, number> = {}
     let totalBilled = 0
     let totalPaid = 0
+    let totalPaidClaims = 0
     let totalDenied = 0
     let totalArb = 0
 
@@ -34,6 +35,7 @@ export default function ProviderPage() {
         providerVolumeMap[name] = (providerVolumeMap[name] || 0) + 1
         totalBilled += (c.billedAmt || 0)
         totalPaid += (c.paidAmt || 0)
+        if ((c.paidAmt && c.paidAmt > 0) || c.claimStatus?.toLowerCase() === 'paid') totalPaidClaims++
         if (c.denialIndicator) totalDenied++
         if (c.arbFlag) totalArb++
     })
@@ -103,7 +105,18 @@ export default function ProviderPage() {
                         </CardContent>
                     </Card>
 
-                    <div className="grid grid-cols-2 gap-4 flex-1">
+                    <div className="grid grid-cols-3 gap-4 flex-1">
+                        <Card className="flex flex-col justify-center">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Paid Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-green-600">
+                                    {totalPaidClaims}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Successfully collected</p>
+                            </CardContent>
+                        </Card>
                         <Card className="flex flex-col justify-center">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Denied Claims</CardTitle>
