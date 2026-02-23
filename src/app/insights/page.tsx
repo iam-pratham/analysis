@@ -74,54 +74,17 @@ export default function AIInsightsPage() {
         return <div className="p-6">Navigate to Upload page to load data.</div>
     }
 
-    const targetRef = useRef<HTMLDivElement>(null)
-    const [isExporting, setIsExporting] = useState(false)
-
-    const exportPdf = async () => {
-        if (!targetRef.current) return
-        setIsExporting(true)
-        try {
-            const html2canvas = (await import('html2canvas')).default
-            const { jsPDF } = await import('jspdf')
-
-            const canvas = await html2canvas(targetRef.current, {
-                scale: 2,
-                useCORS: true,
-                logging: false,
-                backgroundColor: document.documentElement.classList.contains('dark') ? '#020817' : '#ffffff'
-            })
-
-            const imgData = canvas.toDataURL('image/jpeg', 1.0)
-            const pdf = new jsPDF({ orientation: 'p', unit: 'mm', format: 'a4' })
-
-            const pdfWidth = pdf.internal.pageSize.getWidth()
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width
-
-            pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight)
-            pdf.save('AI-Insights.pdf')
-        } catch (err) {
-            console.error("Failed to export PDF", err)
-        } finally {
-            setIsExporting(false)
-        }
-    }
-
     return (
-        <div className="p-6 max-w-7xl mx-auto space-y-6" ref={targetRef}>
-            <div className="flex items-center justify-between print:hidden">
+        <div className="p-6 max-w-7xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
                     <Sparkles className="h-6 w-6 text-primary" />
                     AI Automated Insights
                 </h1>
-                <div className="flex items-center gap-2">
-                    <Button onClick={exportPdf} disabled={isExporting} variant="outline" size="sm">
-                        {isExporting ? "Exporting..." : "Download PDF"}
-                    </Button>
-                    <Button onClick={generateInsights} disabled={loading} variant="outline" size="sm" className="gap-2">
-                        <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                        {loading ? "Analyzing..." : "Refresh Insights"}
-                    </Button>
-                </div>
+                <Button onClick={generateInsights} disabled={loading} variant="outline" className="gap-2">
+                    <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    {loading ? "Analyzing..." : "Refresh Insights"}
+                </Button>
             </div>
 
             <GlobalFilters />

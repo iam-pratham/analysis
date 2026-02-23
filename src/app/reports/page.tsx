@@ -46,44 +46,13 @@ export default function ReportsPage() {
         setPage(1)
     }
 
-    const exportCSV = () => {
-        const headers = ["claimId", "serviceDate", "patientName", "insuranceCompany", "insuranceType", "payerId", "providerName", "doctorName", "cptCode", "claimSentDate", "billedAmt", "paidAmt", "claimStatus"];
-        const rows = sortedClaims.map(claim => {
-            return headers.map(header => {
-                let val = claim[header as keyof typeof claim] || "";
-                if (header.includes("Date") && val) {
-                    try { val = format(new Date(String(val)), "yyyy-MM-dd") } catch (e) { }
-                }
-                return `"${String(val).replace(/"/g, '""')}"`;
-            }).join(",");
-        });
-        const csvContent = "data:text/csv;charset=utf-8," + [headers.join(","), ...rows].join("\n");
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", "Raw-Claims-Report.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
-
-    const exportPDF = () => {
-        window.print();
-    }
-
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
     }
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6 animate-in fade-in duration-500">
-            <div className="flex items-center justify-between print:hidden">
-                <h1 className="text-3xl font-bold tracking-tight">Raw Claims Report</h1>
-                <div className="flex gap-2">
-                    <Button onClick={exportCSV} variant="outline" size="sm">Download CSV</Button>
-                    <Button onClick={exportPDF} variant="outline" size="sm">Print to PDF</Button>
-                </div>
-            </div>
+            <h1 className="text-3xl font-bold tracking-tight">Raw Claims Report</h1>
             <GlobalFilters />
 
             <Card className="bg-card/50">

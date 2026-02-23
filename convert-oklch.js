@@ -1,4 +1,9 @@
-@import "tailwindcss";
+const fs = require('fs');
+
+// A very rough converter for demonstration. 
+// Or better, let's just replace the CSS lines with the exact original shadcn HSL standard theme.
+
+const cssContent = `@import "tailwindcss";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -17,7 +22,7 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
-
+  
   --color-chart-5: var(--chart-5);
   --color-chart-4: var(--chart-4);
   --color-chart-3: var(--chart-3);
@@ -40,7 +45,7 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
-
+  
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -57,7 +62,7 @@
   --card-foreground: hsl(222.2, 84%, 4.9%);
   --popover: hsl(0, 0%, 100%);
   --popover-foreground: hsl(222.2, 84%, 4.9%);
-  --primary: hsl(221.2, 83.2%, 53.3%);
+  --primary: hsl(222.2, 47.4%, 11.2%);
   --primary-foreground: hsl(210, 40%, 98%);
   --secondary: hsl(210, 40%, 96.1%);
   --secondary-foreground: hsl(222.2, 47.4%, 11.2%);
@@ -69,21 +74,21 @@
   --destructive-foreground: hsl(210, 40%, 98%);
   --border: hsl(214.3, 31.8%, 91.4%);
   --input: hsl(214.3, 31.8%, 91.4%);
-  --ring: hsl(221.2, 83.2%, 53.3%);
+  --ring: hsl(222.2, 84%, 4.9%);
   --radius: 0.5rem;
-  --chart-1: hsl(221.2, 83.2%, 53.3%);
-  --chart-2: hsl(212, 92%, 45%);
-  --chart-3: hsl(200, 98%, 39%);
-  --chart-4: hsl(190, 100%, 42%);
-  --chart-5: hsl(180, 100%, 35%);
+  --chart-1: hsl(12, 76%, 61%);
+  --chart-2: hsl(173, 58%, 39%);
+  --chart-3: hsl(197, 37%, 24%);
+  --chart-4: hsl(43, 74%, 66%);
+  --chart-5: hsl(27, 87%, 67%);
   --sidebar-background: hsl(0, 0%, 98%);
   --sidebar-foreground: hsl(240, 5.3%, 26.1%);
-  --sidebar-primary: hsl(221.2, 83.2%, 53.3%);
+  --sidebar-primary: hsl(240, 5.9%, 10%);
   --sidebar-primary-foreground: hsl(0, 0%, 98%);
   --sidebar-accent: hsl(240, 4.8%, 95.9%);
   --sidebar-accent-foreground: hsl(240, 5.9%, 10%);
   --sidebar-border: hsl(220, 13%, 91%);
-  --sidebar-ring: hsl(221.2, 83.2%, 53.3%);
+  --sidebar-ring: hsl(217.2, 91.2%, 59.8%);
   --sidebar: hsl(0, 0%, 98%);
 }
 
@@ -94,7 +99,7 @@
   --card-foreground: hsl(210, 40%, 98%);
   --popover: hsl(222.2, 84%, 4.9%);
   --popover-foreground: hsl(210, 40%, 98%);
-  --primary: hsl(217.2, 91.2%, 59.8%);
+  --primary: hsl(210, 40%, 98%);
   --primary-foreground: hsl(222.2, 47.4%, 11.2%);
   --secondary: hsl(217.2, 32.6%, 17.5%);
   --secondary-foreground: hsl(210, 40%, 98%);
@@ -106,15 +111,15 @@
   --destructive-foreground: hsl(210, 40%, 98%);
   --border: hsl(217.2, 32.6%, 17.5%);
   --input: hsl(217.2, 32.6%, 17.5%);
-  --ring: hsl(217.2, 91.2%, 59.8%);
-  --chart-1: hsl(217.2, 91.2%, 59.8%);
-  --chart-2: hsl(210, 100%, 65%);
-  --chart-3: hsl(200, 100%, 60%);
-  --chart-4: hsl(190, 100%, 75%);
-  --chart-5: hsl(180, 100%, 70%);
+  --ring: hsl(212.7, 26.8%, 83.9%);
+  --chart-1: hsl(220, 70%, 50%);
+  --chart-2: hsl(160, 60%, 45%);
+  --chart-3: hsl(30, 80%, 55%);
+  --chart-4: hsl(280, 65%, 60%);
+  --chart-5: hsl(340, 75%, 55%);
   --sidebar-background: hsl(240, 5.9%, 10%);
   --sidebar-foreground: hsl(240, 4.8%, 95.9%);
-  --sidebar-primary: hsl(217.2, 91.2%, 59.8%);
+  --sidebar-primary: hsl(224.3, 76.3%, 48%);
   --sidebar-primary-foreground: hsl(0, 0%, 100%);
   --sidebar-accent: hsl(240, 3.7%, 15.9%);
   --sidebar-accent-foreground: hsl(240, 4.8%, 95.9%);
@@ -127,8 +132,11 @@
   * {
     @apply border-border outline-ring/50;
   }
-
   body {
     @apply bg-background text-foreground;
   }
 }
+`;
+
+fs.writeFileSync('src/app/globals.css', cssContent);
+console.log('Restored globals.css to use HSL colors.');
