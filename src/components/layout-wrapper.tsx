@@ -18,13 +18,16 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     const isDashboard = pathname === "/"
 
     useEffect(() => {
-        setMounted(true)
+        const t0 = setTimeout(() => setMounted(true), 0)
         const t1 = setTimeout(() => {
             setFadeOut(true)
             const t2 = setTimeout(() => setPreloading(false), 300)
             return () => clearTimeout(t2)
         }, 800)
-        return () => clearTimeout(t1)
+        return () => {
+            clearTimeout(t0)
+            clearTimeout(t1)
+        }
     }, [])
 
     return (
@@ -36,10 +39,10 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
             )}
             <DataProvider>
                 <SidebarProvider>
-                    <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden bg-background text-foreground">
+                    <div className="flex flex-col md:flex-row h-screen w-full overflow-hidden text-foreground bg-transparent">
                         <AppSidebar />
-                        <main className="flex-1 w-full flex flex-col h-screen overflow-hidden">
-                            <header className="h-14 border-b flex items-center justify-between px-4 sticky top-0 bg-background/95 backdrop-blur z-10 shrink-0">
+                        <main className="flex-1 w-full flex flex-col h-screen overflow-hidden bg-transparent">
+                            <header className="h-14 border-b border-border/50 flex items-center justify-between px-4 sticky top-0 bg-background/40 backdrop-blur-xl z-10 shrink-0">
                                 <div className="flex items-center gap-2">
                                     <SidebarTrigger />
                                 </div>
@@ -47,6 +50,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
                                     <Button
                                         variant="ghost"
                                         size="icon"
+                                        className="hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
                                         onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
                                     >
                                         {resolvedTheme === "dark" ? (
@@ -58,7 +62,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
                                     </Button>
                                 )}
                             </header>
-                            <div className={`flex-1 bg-muted/20 ${isDashboard ? 'overflow-hidden pb-4' : 'overflow-auto pb-16'}`}>
+                            <div className={`flex-1 bg-transparent ${isDashboard ? 'overflow-hidden pb-4' : 'overflow-auto pb-16'}`}>
                                 {children}
                             </div>
                         </main>

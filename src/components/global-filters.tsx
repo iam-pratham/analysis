@@ -17,7 +17,7 @@ export function GlobalFilters() {
     const handleInsurance = (v: string) => setFilters((prev) => ({ ...prev, insuranceType: v === "all" ? null : v }))
 
     return (
-        <div className="flex items-center justify-between p-4 bg-card rounded-xl border shadow-sm mb-6">
+        <div className="flex items-center justify-between p-4 bg-card/50 backdrop-blur-xl rounded-2xl border border-border/50 shadow-sm mb-6 transition-all duration-300 hover:border-primary/20">
             <div className="flex items-center gap-4">
                 <span className="text-sm font-semibold text-muted-foreground">Global Filters:</span>
 
@@ -45,11 +45,18 @@ export function GlobalFilters() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Insurances</SelectItem>
-                                {insurances.map((i) => (
-                                    <SelectItem key={i} value={i}>
-                                        {i}
-                                    </SelectItem>
-                                ))}
+                                {insurances.map((i) => {
+                                    let label = i;
+                                    const low = i.toLowerCase();
+                                    if (low.includes("workers compensation") || low.includes("worker's compensation") || low === "wc") label = "WC";
+                                    else if (low === "medicaid" || low === "lop") label = "LOP";
+                                    else if (low.includes("motor vehicle") || low === "mva") label = "MVA";
+                                    return (
+                                        <SelectItem key={i} value={i}>
+                                            {label}
+                                        </SelectItem>
+                                    );
+                                })}
                             </SelectContent>
                         </Select>
                     </div>

@@ -1,74 +1,81 @@
 "use client"
 
-import React, { useState, useEffect, useRef } from "react"
+import React from "react"
 import { useData } from "@/context/data-context"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlobalFilters } from "@/components/global-filters"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { RefreshCcw, Sparkles } from "lucide-react"
+import { motion } from "framer-motion"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
 
-export default function AIInsightsPage() {
+const containerVariants = {
+    hidden: { opacity: 0 },
+    show: {
+        opacity: 1,
+        transition: { staggerChildren: 0.1 }
+    }
+}
+
+const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+}
+
+export default function ReportsPage() {
     const { filteredClaims, claims } = useData()
-    const [insights, setInsights] = useState<any[]>([])
-    const [loading, setLoading] = useState(false)
-    const isFetchingRef = useRef(false)
 
-    const generateInsights = async () => {
-        if (filteredClaims.length === 0 || isFetchingRef.current) return
-        isFetchingRef.current = true
-        setLoading(true)
-
-        const providerMap: any = {}
-        const doctorMap: any = {}
-        const cptMap: any = {}
-        const insMap: any = {}
+    const statusMetrics = React.useMemo(() => {
+        let deductible = 0;
+        let pending = 0;
+        let noBenefits = 0;
+        let maxLimit = 0;
+        let paid = 0;
+        let denied = 0;
 
         filteredClaims.forEach(c => {
-            providerMap[c.providerName] = (providerMap[c.providerName] || 0) + 1
-            doctorMap[c.doctorName] = (doctorMap[c.doctorName] || 0) + 1
-            insMap[c.insuranceType] = (insMap[c.insuranceType] || 0) + 1
+            const status = String(c.claimStatus || "").toLowerCase();
+            const payStatus = String(c.paymentStatus || "").toLowerCase();
+            const fullText = (status + " " + payStatus).toLowerCase();
 
-            const codes = String(c.cptCode || "").split(',').map(s => s.trim()).filter(Boolean)
-            codes.forEach(code => {
-                cptMap[code] = (cptMap[code] || 0) + 1
-            })
-        })
+            // 1. Highest Priority: Denied
+            if (fullText.includes('denied') || fullText.includes('deni')) {
+                denied++;
+            }
+            // 2. Paid (User: "whatever says paid is paid")
+            else if (fullText.includes('paid')) {
+                paid++;
+            }
+            // 3. Max Limit / Not Covered
+            else if (fullText.includes('maximum limit') || fullText.includes('reached maximum limit') || fullText.includes('max limit') || fullText.includes('not covered under patient plan') || fullText.includes('not covered')) {
+                maxLimit++;
+            }
+            // 4. Deductible / Self Pay
+            else if (fullText.includes('towards deductible') || fullText.includes('towards ded') || fullText.includes('deductible') || fullText.includes('self pay') || fullText.includes('self-pay') || fullText.includes('selfpay') || fullText.includes('patient responsibility') || fullText.includes('patient resp')) {
+                deductible++;
+            }
+            // 5. No Benefits / LOP / ARB
+            else if (fullText.includes('no oon') || fullText.includes('out of network') || fullText.includes('benefits exhausted') || fullText.includes('benefits') || fullText.includes('secondary insurance') || fullText.includes('secondary') || fullText.includes('exhausted') || fullText.includes('lop') || fullText.includes('arb') || fullText.includes('arbitration') || fullText.includes('under arbitration')) {
+                noBenefits++;
+            }
+            // 6. Pending
+            else if (fullText.includes('pending') || fullText.includes('in process') || fullText.includes('in-process')) {
+                pending++;
+            }
+        });
 
-        const payload = {
-            existingTitles: insights.map((i: any) => i.title),
-            providerVolumes: Object.keys(providerMap).map(p => ({ provider: p, count: providerMap[p] })),
-            doctorVolumes: Object.keys(doctorMap).map(d => ({ doctor: d, count: doctorMap[d] })).sort((a, b) => b.count - a.count),
-            cptUsages: Object.keys(cptMap).map(c => ({ cptCode: c, count: cptMap[c] })).sort((a, b) => b.count - a.count),
-            insuranceMix: Object.keys(insMap).map(i => ({ type: i, count: insMap[i] })),
-            totalVolume: filteredClaims.length
-        }
+        return [
+            { name: "Deductible / Self Pay", value: deductible, fill: "var(--color-chart-1)" },
+            { name: "Pending", value: pending, fill: "var(--color-chart-2)" },
+            { name: "No OON / LOP / ARB", value: noBenefits, fill: "var(--color-chart-3)" },
+            { name: "Max Limit / Not Covered", value: maxLimit, fill: "var(--color-chart-4)" },
+            { name: "Paid Claims", value: paid, fill: "var(--color-chart-5)" },
+            { name: "Denied", value: denied, fill: "var(--color-destructive)" }
+        ]
+    }, [filteredClaims])
 
-        try {
-            const resp = await fetch("/api/insights", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            })
-            const result = await resp.json()
-            setInsights(prev => {
-                // To be extremely safe about duplicates from fast clicking
-                const newInsights = (result.insights || []).filter((ni: any) => !prev.find(p => p.title === ni.title))
-                return [...newInsights, ...prev]
-            })
-        } catch (e) {
-            console.error(e)
-        } finally {
-            setLoading(false)
-            isFetchingRef.current = false
-        }
-    }
-
-    useEffect(() => {
-        if (claims.length > 0 && insights.length === 0) {
-            generateInsights()
-        }
-    }, [claims])
+    const chartConfig = {
+        value: { label: "Claims", color: "var(--color-primary)" }
+    } satisfies ChartConfig;
 
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
@@ -77,55 +84,62 @@ export default function AIInsightsPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
-                    <Sparkles className="h-6 w-6 text-primary" />
-                    AI Automated Insights
+                <h1 className="text-4xl font-extrabold tracking-tight text-foreground drop-shadow-sm">
+                    Reports
                 </h1>
-                <Button onClick={generateInsights} disabled={loading} variant="outline" className="gap-2">
-                    <RefreshCcw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-                    {loading ? "Analyzing..." : "Refresh Insights"}
-                </Button>
             </div>
 
             <GlobalFilters />
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {loading ? (
-                    [1, 2, 3].map(i => (
-                        <Card key={i} className="animate-pulse bg-card">
-                            <CardHeader className="space-y-2">
-                                <div className="h-4 bg-muted rounded w-1/4"></div>
-                                <div className="h-6 bg-muted rounded w-3/4"></div>
-                            </CardHeader>
-                            <CardContent className="space-y-2">
-                                <div className="h-4 bg-muted rounded"></div>
-                                <div className="h-4 bg-muted rounded"></div>
-                                <div className="h-4 bg-muted rounded w-5/6"></div>
-                            </CardContent>
-                        </Card>
-                    ))
-                ) : (
-                    insights.map((insight) => (
-                        <Card key={insight.id} className="relative overflow-hidden bg-card border">
-                            <div className={`absolute top-0 left-0 w-full h-1 ${insight.badgeColor}`}></div>
-                            <CardHeader>
-                                <div className="flex items-center justify-between mb-2">
-                                    <Badge variant="outline" className={`${insight.type === 'Risk' ? 'text-red-500 border-red-500/50' : insight.type === 'Opportunity' ? 'text-green-500 border-green-500/50' : 'text-blue-500 border-blue-500/50'}`}>
-                                        {insight.type}
-                                    </Badge>
-                                    <span className="text-xs text-muted-foreground font-medium">
-                                        {insight.confidence} Confidence
-                                    </span>
-                                </div>
-                                <CardTitle className="text-xl">{insight.title}</CardTitle>
+            <motion.div
+                variants={containerVariants}
+                initial="hidden"
+                animate="show"
+                className="grid gap-4 md:grid-cols-3 lg:grid-cols-6"
+            >
+                {statusMetrics.map((sm, i) => (
+                    <motion.div variants={itemVariants} key={i}>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-xs font-medium text-muted-foreground">{sm.name}</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-muted-foreground leading-relaxed">{insight.description}</p>
+                                <div className="text-2xl font-bold">
+                                    {sm.value}
+                                </div>
                             </CardContent>
                         </Card>
-                    ))
-                )}
-            </div>
+                    </motion.div>
+                ))}
+            </motion.div>
+
+            <motion.div variants={containerVariants} initial="hidden" animate="show">
+                <Card className="mb-6">
+                    <CardHeader>
+                        <CardTitle>Status Category Distribution</CardTitle>
+                        <CardDescription>Breakdown of claims into key analytic status buckets</CardDescription>
+                    </CardHeader>
+                    <CardContent className="pb-4">
+                        <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                            <BarChart accessibilityLayer data={statusMetrics} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
+                                <XAxis
+                                    dataKey="name"
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tickMargin={10}
+                                    style={{ fill: "var(--color-muted-foreground)", fontSize: "11px" }}
+                                />
+                                <YAxis tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
+                                <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
+                                <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
+                                    <LabelList dataKey="value" position="top" offset={10} className="fill-foreground" fontSize={12} />
+                                </Bar>
+                            </BarChart>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </motion.div>
         </div>
     )
 }

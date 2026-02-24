@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation"
 import { GlobalFilters } from "@/components/global-filters"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { FileText, ShieldAlert, CheckCircle, AlertOctagon } from "lucide-react"
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, CartesianGrid } from "recharts"
+import { BarChart, Bar, XAxis, PieChart, Pie, CartesianGrid, LabelList } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { motion } from "framer-motion"
 
 const chartConfig = {
   value: {
@@ -16,7 +17,18 @@ const chartConfig = {
   },
 } satisfies ChartConfig
 
+const containerVariants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: { staggerChildren: 0.1 }
+  }
+}
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+}
 
 export default function DashboardPage() {
   const { filteredClaims, claims } = useData()
@@ -38,8 +50,7 @@ export default function DashboardPage() {
   const deniedCount = filteredClaims.filter((c) => c.denialIndicator).length
   const paidCount = filteredClaims.filter((c) =>
     String(c.paymentStatus).toLowerCase().includes("paid") ||
-    String(c.claimStatus).toLowerCase() === "paid" ||
-    (!c.denialIndicator && String(c.claimStatus).toLowerCase() !== "denied")
+    String(c.claimStatus).toLowerCase().includes("paid")
   ).length
 
   // Generate Data for Bar Chart: Claims by Insurance
@@ -70,7 +81,7 @@ export default function DashboardPage() {
   const dynamicPieConfig = {
     value: { label: "Volume" },
     ...Object.fromEntries(
-      cptData.map((d, i) => [
+      cptData.map((d) => [
         d.name,
         { label: d.name, color: d.fill }
       ])
@@ -80,114 +91,161 @@ export default function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight text-foreground drop-shadow-sm">Dashboard</h1>
       </div>
 
       <GlobalFilters />
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Claims</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{totalClaims.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">Processed claims mtching filters</p>
-          </CardContent>
-        </Card>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
+      >
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Claims</CardTitle>
+              <div className="p-2 bg-primary/10 rounded-full">
+                <FileText className="h-4 w-4 text-primary" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{totalClaims.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">Processed claims mtching filters</p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">ARB Volume</CardTitle>
-            <ShieldAlert className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{arbCount.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">{((arbCount / totalClaims) * 100 || 0).toFixed(1)}% of total volume</p>
-          </CardContent>
-        </Card>
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">ARB Volume</CardTitle>
+              <div className="p-2 bg-chart-1/10 rounded-full">
+                <ShieldAlert className="h-4 w-4 text-chart-1" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{arbCount.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">{((arbCount / totalClaims) * 100 || 0).toFixed(1)}% of total volume</p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Est. Paid / Allowed</CardTitle>
-            <CheckCircle className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{paidCount.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">{((paidCount / totalClaims) * 100 || 0).toFixed(1)}% performance rate</p>
-          </CardContent>
-        </Card>
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Paid Claims</CardTitle>
+              <div className="p-2 bg-chart-2/10 rounded-full">
+                <CheckCircle className="h-4 w-4 text-chart-2" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{paidCount.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">{((paidCount / totalClaims) * 100 || 0).toFixed(1)}% performance rate</p>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Denied Claims</CardTitle>
-            <AlertOctagon className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{deniedCount.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground mt-1">{((deniedCount / totalClaims) * 100 || 0).toFixed(1)}% denial rate</p>
-          </CardContent>
-        </Card>
-      </div>
+        <motion.div variants={itemVariants}>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Denied Claims</CardTitle>
+              <div className="p-2 bg-destructive/10 rounded-full">
+                <AlertOctagon className="h-4 w-4 text-destructive" />
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="text-3xl font-bold">{deniedCount.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">{((deniedCount / totalClaims) * 100 || 0).toFixed(1)}% denial rate</p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
 
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle>Top Insurances Volume</CardTitle>
-            <CardDescription>Highest volume payers</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 pb-0">
-            <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-              <BarChart accessibilityLayer data={insurancesData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
-                <CartesianGrid vertical={false} />
-                <XAxis
-                  dataKey="name"
-                  tickLine={false}
-                  tickMargin={10}
-                  axisLine={false}
-                  tickFormatter={(value) => value.length > 14 ? value.substring(0, 14) + "..." : value}
-                  style={{ fontSize: "11px" }}
-                />
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent />}
-                />
-                <Bar dataKey="value" fill="var(--color-primary)" radius={8} />
-              </BarChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="show"
+        className="grid gap-6 md:grid-cols-2"
+      >
+        <motion.div variants={itemVariants} className="h-full">
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <CardTitle>Top Insurances Volume</CardTitle>
+              <CardDescription>Highest volume payers</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+              <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
+                <BarChart accessibilityLayer data={insurancesData} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
+                  <XAxis
+                    dataKey="name"
+                    tickLine={false}
+                    tickMargin={10}
+                    axisLine={false}
+                    tickFormatter={(value) => {
+                      const u = value.toUpperCase();
+                      if (u === "WC") return "WC";
+                      if (u === "LOP") return "LOP";
+                      if (u === "MVA") return "MVA";
+                      if (u.includes("PROGRESSIVE")) return "Progressive";
+                      if (u.includes("NJ MANUFACTUR")) return "NJM";
+                      if (u.includes("STATE FARM")) return "State Farm";
+                      if (u.includes("HORIZON BCBS")) return "Horizon OOS";
+                      if (u.includes("PLYMOUTH ROCK")) return "Plymouth Rock";
+                      if (u.includes("GEICO")) return "Geico NJ";
+                      const formatted = value.toLowerCase().replace(/\b\w/g, (c: string) => c.toUpperCase());
+                      return formatted.length > 14 ? formatted.substring(0, 14) + "..." : formatted;
+                    }}
+                    style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }}
+                  />
+                  <ChartTooltip
+                    cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }}
+                    content={<ChartTooltipContent />}
+                  />
+                  <Bar dataKey="value" fill="var(--color-chart-1)" radius={[8, 8, 0, 0]}>
+                    <LabelList dataKey="value" position="top" offset={10} className="fill-foreground" fontSize={12} />
+                  </Bar>
+                </BarChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
 
-        <Card className="flex flex-col">
-          <CardHeader>
-            <CardTitle>Top 5 CPT Distribution</CardTitle>
-            <CardDescription>Most frequently billed codes</CardDescription>
-          </CardHeader>
-          <CardContent className="flex-1 pb-0">
-            <ChartContainer config={dynamicPieConfig} className="mx-auto aspect-square max-h-[300px]">
-              <PieChart>
-                <ChartTooltip
-                  cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
-                />
-                <ChartLegend className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4" content={<ChartLegendContent nameKey="name" />} />
-                <Pie
-                  data={cptData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={80}
-                  paddingAngle={2}
-                  dataKey="value"
-                  labelLine={false}
-                >
-                </Pie>
-              </PieChart>
-            </ChartContainer>
-          </CardContent>
-        </Card>
-      </div>
+        <motion.div variants={itemVariants} className="h-full">
+          <Card className="flex flex-col h-full">
+            <CardHeader>
+              <CardTitle>Top 5 CPT Distribution</CardTitle>
+              <CardDescription>Most frequently billed codes</CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 pb-0">
+              <ChartContainer config={dynamicPieConfig} className="mx-auto aspect-square max-h-[300px]">
+                <PieChart>
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <ChartLegend className="flex-wrap gap-4 pb-4" content={<ChartLegendContent nameKey="name" />} />
+                  <Pie
+                    data={cptData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={4}
+                    dataKey="value"
+                    labelLine={{ stroke: "var(--color-border)", strokeWidth: 1 }}
+                    label={{ fill: "var(--color-foreground)", fontSize: 12, fontWeight: "medium" }}
+                    stroke="none"
+                  >
+                  </Pie>
+                </PieChart>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }
