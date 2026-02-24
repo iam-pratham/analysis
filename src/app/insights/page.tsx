@@ -5,7 +5,7 @@ import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlobalFilters } from "@/components/global-filters"
 import { motion } from "framer-motion"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
 
 const containerVariants = {
@@ -133,7 +133,13 @@ export default function ReportsPage() {
                                 <YAxis tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                 <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
-                                    <LabelList dataKey="value" position="top" offset={10} className="fill-foreground" fontSize={12} />
+                                    {statusMetrics.map((entry, index) => (
+                                        <Cell
+                                            key={`cell-${index}`}
+                                            fill={`rgba(255, 255, 255, ${0.9 - (index * 0.12)})`}
+                                        />
+                                    ))}
+                                    <LabelList dataKey="value" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
                                 </Bar>
                             </BarChart>
                         </ChartContainer>

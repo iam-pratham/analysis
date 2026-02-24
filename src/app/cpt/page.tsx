@@ -4,7 +4,7 @@ import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlobalFilters } from "@/components/global-filters"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Cell } from "recharts"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import { motion } from "framer-motion"
@@ -101,11 +101,23 @@ export default function CptAnalysisPage() {
                                     />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent indicator="dashed" />} />
                                     <ChartLegend content={<ChartLegendContent />} />
-                                    <Bar dataKey="total" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]}>
-                                        <LabelList dataKey="total" position="top" offset={10} className="fill-foreground" fontSize={12} />
+                                    <Bar dataKey="total" radius={[4, 4, 0, 0]}>
+                                        {topCpts.map((entry, index) => (
+                                            <Cell
+                                                key={`cell-total-${index}`}
+                                                fill={`rgba(255, 255, 255, ${0.9 - (index * 0.05)})`}
+                                            />
+                                        ))}
+                                        <LabelList dataKey="total" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
                                     </Bar>
-                                    <Bar dataKey="denied" fill="var(--color-destructive)" radius={[4, 4, 0, 0]}>
-                                        <LabelList dataKey="denied" position="top" offset={10} className="fill-foreground" fontSize={12} />
+                                    <Bar dataKey="denied" radius={[4, 4, 0, 0]}>
+                                        {topCpts.map((entry, index) => (
+                                            <Cell
+                                                key={`cell-denied-${index}`}
+                                                fill={`rgba(255, 255, 255, ${0.4 - (index * 0.02)})`}
+                                            />
+                                        ))}
+                                        <LabelList dataKey="denied" position="top" offset={10} className="fill-foreground/60 font-bold" fontSize={11} />
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>

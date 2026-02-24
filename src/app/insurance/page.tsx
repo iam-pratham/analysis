@@ -4,7 +4,7 @@ import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlobalFilters } from "@/components/global-filters"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, LabelList } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, LabelList, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import { motion } from "framer-motion"
 
@@ -158,8 +158,14 @@ export default function InsuranceAnalysisPage() {
                                         style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }}
                                     />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
-                                    <Bar dataKey="total" fill="var(--color-chart-1)" radius={[0, 4, 4, 0]} maxBarSize={40}>
-                                        <LabelList dataKey="total" position="right" offset={10} className="fill-foreground" fontSize={12} />
+                                    <Bar dataKey="total" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                                        {companyStats.slice(0, 10).map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={`rgba(255, 255, 255, ${0.9 - (index * 0.08)})`}
+                                            />
+                                        ))}
+                                        <LabelList dataKey="total" position="right" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>

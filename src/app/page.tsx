@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { GlobalFilters } from "@/components/global-filters"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { FileText, ShieldAlert, CheckCircle, AlertOctagon } from "lucide-react"
-import { BarChart, Bar, XAxis, PieChart, Pie, CartesianGrid, LabelList } from "recharts"
+import { BarChart, Bar, XAxis, PieChart, Pie, CartesianGrid, LabelList, Cell } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
 import { motion } from "framer-motion"
 
@@ -204,8 +204,14 @@ export default function DashboardPage() {
                     cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }}
                     content={<ChartTooltipContent />}
                   />
-                  <Bar dataKey="value" fill="var(--color-chart-1)" radius={[8, 8, 0, 0]}>
-                    <LabelList dataKey="value" position="top" offset={10} className="fill-foreground" fontSize={12} />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]}>
+                    {insurancesData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={`rgba(255, 255, 255, ${0.9 - (index * 0.15)})`}
+                      />
+                    ))}
+                    <LabelList dataKey="value" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
                   </Bar>
                 </BarChart>
               </ChartContainer>

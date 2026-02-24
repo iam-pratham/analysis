@@ -41,23 +41,18 @@ export function AppSidebar() {
     return (
         <Sidebar className="border-r border-border/40 bg-background/50 backdrop-blur-md">
             <SidebarHeader className="p-7 pb-4">
-                <Link href="/" className="flex items-center gap-3 group transition-opacity hover:opacity-80">
-                    <div className="w-9 h-9 rounded-lg bg-foreground flex items-center justify-center transition-all duration-300">
-                        <Zap className="w-5 h-5 text-background fill-background" />
-                    </div>
-                    <div className="flex flex-col">
-                        <h2 className="text-base font-bold tracking-tight text-foreground leading-none">
-                            SHMB Analytics
-                        </h2>
-                        <span className="text-[11px] text-muted-foreground/60 mt-1">
-                            Precision Billing
-                        </span>
-                    </div>
+                <Link href="/" className="flex flex-col group transition-opacity hover:opacity-80">
+                    <h2 className="text-base font-bold tracking-tight text-foreground leading-none">
+                        SHMB Analytics
+                    </h2>
+                    <span className="text-[11px] text-muted-foreground/60 mt-1">
+                        Precision Billing
+                    </span>
                 </Link>
             </SidebarHeader>
 
             <SidebarContent className="px-3 overflow-y-auto custom-scrollbar">
-                <SidebarGroup className="mt-4">
+                <SidebarGroup className="mt-2">
                     <SidebarGroupLabel className="px-4 text-[11px] font-medium tracking-wider text-muted-foreground/40 mb-3 uppercase">
                         Management
                     </SidebarGroupLabel>
@@ -97,7 +92,7 @@ export function AppSidebar() {
                     </SidebarGroupContent>
                 </SidebarGroup>
 
-                <SidebarGroup className="mt-8">
+                <SidebarGroup className="mt-2">
                     <SidebarGroupLabel className="px-4 text-[11px] font-medium tracking-wider text-muted-foreground/40 mb-3 uppercase">
                         Insights
                     </SidebarGroupLabel>

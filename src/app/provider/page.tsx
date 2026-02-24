@@ -3,7 +3,7 @@
 import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Cell } from "recharts"
 import { GlobalFilters } from "@/components/global-filters"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
 import { motion } from "framer-motion"
@@ -96,8 +96,14 @@ export default function ProviderPage() {
                                     <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                     <YAxis type="category" dataKey="name" width={100} tickLine={false} axisLine={false} style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }} />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent indicator="line" />} />
-                                    <Bar dataKey="claims" fill="var(--color-chart-1)" radius={[0, 4, 4, 0]} maxBarSize={40}>
-                                        <LabelList dataKey="claims" position="right" offset={10} className="fill-foreground" fontSize={12} />
+                                    <Bar dataKey="claims" radius={[0, 4, 4, 0]} maxBarSize={40}>
+                                        {providerData.slice(0, 10).map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={`rgba(255, 255, 255, ${0.9 - (index * 0.08)})`}
+                                            />
+                                        ))}
+                                        <LabelList dataKey="claims" position="right" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>
@@ -204,8 +210,14 @@ export default function ProviderPage() {
                                     />
                                     <YAxis tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
-                                    <Bar dataKey="usage" fill="var(--color-chart-1)" radius={[4, 4, 0, 0]}>
-                                        <LabelList dataKey="usage" position="top" offset={10} className="fill-foreground" fontSize={12} />
+                                    <Bar dataKey="usage" radius={[4, 4, 0, 0]}>
+                                        {cptData.slice(0, 15).map((entry, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={`rgba(255, 255, 255, ${0.9 - (index * 0.05)})`}
+                                            />
+                                        ))}
+                                        <LabelList dataKey="usage" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>
