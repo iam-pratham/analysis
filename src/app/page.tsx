@@ -189,6 +189,7 @@ export default function DashboardPage() {
                       if (u === "WC") return "WC";
                       if (u === "LOP") return "LOP";
                       if (u === "MVA") return "MVA";
+                      if (u === "MVA/WC" || u === "MVA / WC") return "MVA/WC";
                       if (u.includes("PROGRESSIVE")) return "Progressive";
                       if (u.includes("NJ MANUFACTUR")) return "NJM";
                       if (u.includes("STATE FARM")) return "State Farm";

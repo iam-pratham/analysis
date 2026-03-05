@@ -73,12 +73,20 @@ export function DataProvider({ children }: { children: ReactNode }) {
         }).map(claim => {
             // Apply naming fixes according to user request
             let newIns = claim.insuranceType;
-            if (newIns?.toLowerCase().includes("workers compensation") || newIns?.toLowerCase().includes("worker\'s compensation") || newIns?.toLowerCase() === "wc") {
-                newIns = "WC";
+            if (
+                newIns?.toLowerCase().includes("workers compensation") ||
+                newIns?.toLowerCase().includes("worker\'s compensation") ||
+                newIns?.toLowerCase() === "wc" ||
+                newIns?.toLowerCase().includes("motor vehicle") ||
+                newIns?.toLowerCase() === "mva" ||
+                newIns?.toLowerCase() === "mva/wc" ||
+                newIns?.toLowerCase() === "mva / wc" ||
+                newIns?.toLowerCase().includes("mva/wc") ||
+                newIns?.toLowerCase().includes("mva / wc")
+            ) {
+                newIns = "MVA/WC";
             } else if (newIns?.toLowerCase() === "medicaid" || newIns?.toLowerCase() === "lop") {
                 newIns = "LOP";
-            } else if (newIns?.toLowerCase().includes("motor vehicle") || newIns?.toLowerCase() === "mva") {
-                newIns = "MVA";
             }
             return {
                 ...claim,

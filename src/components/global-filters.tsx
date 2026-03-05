@@ -48,9 +48,20 @@ export function GlobalFilters() {
                                 {insurances.map((i) => {
                                     let label = i;
                                     const low = i.toLowerCase();
-                                    if (low.includes("workers compensation") || low.includes("worker's compensation") || low === "wc") label = "WC";
+                                    if (
+                                        low.includes("workers compensation") ||
+                                        low.includes("worker's compensation") ||
+                                        low === "wc" ||
+                                        low.includes("motor vehicle") ||
+                                        low === "mva" ||
+                                        low === "mva/wc" ||
+                                        low === "mva / wc" ||
+                                        low.includes("mva/wc") ||
+                                        low.includes("mva / wc")
+                                    ) {
+                                        label = "MVA/WC";
+                                    }
                                     else if (low === "medicaid" || low === "lop") label = "LOP";
-                                    else if (low.includes("motor vehicle") || low === "mva") label = "MVA";
                                     return (
                                         <SelectItem key={i} value={i}>
                                             {label}
