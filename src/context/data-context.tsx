@@ -87,6 +87,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 newIns = "MVA/WC";
             } else if (newIns?.toLowerCase() === "medicaid" || newIns?.toLowerCase() === "lop") {
                 newIns = "LOP";
+            } else if (newIns?.toLowerCase().includes("commercial")) {
+                newIns = "Commercial";
             }
             return {
                 ...claim,

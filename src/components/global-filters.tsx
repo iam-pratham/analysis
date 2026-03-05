@@ -62,6 +62,7 @@ export function GlobalFilters() {
                                         label = "MVA/WC";
                                     }
                                     else if (low === "medicaid" || low === "lop") label = "LOP";
+                                    else if (low.includes("commercial")) label = "Commercial";
                                     return (
                                         <SelectItem key={i} value={i}>
                                             {label}
