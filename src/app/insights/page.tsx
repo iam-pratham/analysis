@@ -33,33 +33,71 @@ export default function ReportsPage() {
         let denied = 0;
 
         filteredClaims.forEach(c => {
-            const status = String(c.claimStatus || "").toLowerCase();
-            const payStatus = String(c.paymentStatus || "").toLowerCase();
+            const status = String(c.claimStatus || "").toLowerCase().trim();
+            const payStatus = String(c.paymentStatus || "").toLowerCase().trim();
             const fullText = (status + " " + payStatus).toLowerCase();
 
-            // 1. Highest Priority: Denied
-            if (fullText.includes('denied') || fullText.includes('deni')) {
-                denied++;
-            }
-            // 2. Paid (User: "whatever says paid is paid")
-            else if (fullText.includes('paid')) {
-                paid++;
-            }
-            // 3. Max Limit / Not Covered
-            else if (fullText.includes('maximum limit') || fullText.includes('reached maximum limit') || fullText.includes('max limit') || fullText.includes('not covered under patient plan') || fullText.includes('not covered')) {
-                maxLimit++;
-            }
-            // 4. Deductible / Self Pay
-            else if (fullText.includes('towards deductible') || fullText.includes('towards ded') || fullText.includes('deductible') || fullText.includes('self pay') || fullText.includes('self-pay') || fullText.includes('selfpay') || fullText.includes('patient responsibility') || fullText.includes('patient resp')) {
-                deductible++;
-            }
-            // 5. No Benefits / LOP / ARB
-            else if (fullText.includes('no oon') || fullText.includes('out of network') || fullText.includes('benefits exhausted') || fullText.includes('benefits') || fullText.includes('secondary insurance') || fullText.includes('secondary') || fullText.includes('exhausted') || fullText.includes('lop') || fullText.includes('arb') || fullText.includes('arbitration') || fullText.includes('under arbitration')) {
+            // Category classification (Mutually exclusive for main buckets)
+            // 1. No OON / LOP / ARB
+            if (
+                status.includes("benefit exhausted/secondary insurance/lop") ||
+                status.includes("denied-no oon with secondary/lop/pt's responsibility") ||
+                status.includes("under arbitration") ||
+                status === "lop"
+            ) {
                 noBenefits++;
             }
-            // 6. Pending
-            else if (fullText.includes('pending') || fullText.includes('in process') || fullText.includes('in-process')) {
+            // 2. Deductible / Self Pay
+            else if (
+                status.includes("towards dedcutible") ||
+                status.includes("towards deductible") ||
+                status.includes("self pay")
+            ) {
+                deductible++;
+            }
+            // 3. Pending
+            else if (status.includes("in process")) {
                 pending++;
+            }
+            // 4. Paid
+            else if (
+                status.includes("paid correctly") ||
+                status.includes("paid with 50% pre-cert penalty") ||
+                status.includes("paid with patient's responsibllity") ||
+                status.includes("paid with patient's responsibility")
+            ) {
+                paid++;
+            }
+            // 5. Max Limit / Not Covered
+            else if (
+                status.includes("reached maximum limit") ||
+                status.includes("not covered under patient's plan") ||
+                status.includes("not covered under patient plan")
+            ) {
+                maxLimit++;
+            }
+            // Fallbacks for older dummy data or generalized variants
+            else if (fullText.includes("paid")) {
+                paid++;
+            }
+            else if (fullText.includes("arb") || fullText.includes("lop")) {
+                noBenefits++;
+            }
+            else if (fullText.includes("pending")) {
+                pending++;
+            }
+            else if (fullText.includes("maximum limit") || fullText.includes("not covered")) {
+                maxLimit++;
+            }
+            else if (fullText.includes("deductible") || fullText.includes("selfpay")) {
+                deductible++;
+            }
+
+            // 6. Denied (Independent check)
+            // Any claim containing 'denied' or 'deni' should be counted in the Denied card,
+            // even if it was also classified under No OON.
+            if (status.includes("denied") || status.includes("deni") || fullText.includes("denied") || fullText.includes("deni")) {
+                denied++;
             }
         });
 
@@ -84,7 +122,7 @@ export default function ReportsPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
-                <h1 className="text-4xl font-extrabold tracking-tight text-foreground drop-shadow-sm">
+                <h1 className="text-3xl font-bold tracking-tight text-foreground">
                     Reports
                 </h1>
             </div>
@@ -136,7 +174,7 @@ export default function ReportsPage() {
                                     {statusMetrics.map((entry, index) => (
                                         <Cell
                                             key={`cell-${index}`}
-                                            fill={`rgba(255, 255, 255, ${0.9 - (index * 0.12)})`}
+                                            fill={entry.fill}
                                         />
                                     ))}
                                     <LabelList dataKey="value" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />

@@ -64,7 +64,7 @@ export default function CptAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground drop-shadow-sm">CPT Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">CPT Analysis</h1>
             <GlobalFilters />
 
             <motion.div
@@ -105,7 +105,7 @@ export default function CptAnalysisPage() {
                                         {topCpts.map((entry, index) => (
                                             <Cell
                                                 key={`cell-total-${index}`}
-                                                fill={`rgba(255, 255, 255, ${0.9 - (index * 0.05)})`}
+                                                fill={`var(--color-chart-${(index % 5) + 1})`}
                                             />
                                         ))}
                                         <LabelList dataKey="total" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
@@ -114,7 +114,7 @@ export default function CptAnalysisPage() {
                                         {topCpts.map((entry, index) => (
                                             <Cell
                                                 key={`cell-denied-${index}`}
-                                                fill={`rgba(255, 255, 255, ${0.4 - (index * 0.02)})`}
+                                                fill="var(--color-destructive)"
                                             />
                                         ))}
                                         <LabelList dataKey="denied" position="top" offset={10} className="fill-foreground/60 font-bold" fontSize={11} />

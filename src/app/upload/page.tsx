@@ -70,25 +70,35 @@ export default function UploadPage() {
                 const arbFlagStr = String(arbFlagRaw || "").toLowerCase()
                 let isArb = arbFlagStr === "yes" || arbFlagStr === "true" || arbFlagRaw === 1
 
-                for (const val of Object.values(row)) {
-                    const strVal = String(val).toLowerCase()
-                    if (strVal.includes("deni")) isDeni = true
-                    if (strVal.includes("paid")) foundPaid = true
-                    if (strVal.includes("towards deductible") || strVal.includes("towards ded") || strVal.includes("self pay") || strVal.includes("self-pay") || strVal.includes("selfpay") || strVal.includes("patient responsibility")) foundDeductible = true
-                    if (strVal === "lop" || strVal.includes("lop ") || strVal.includes(" lop")) foundLop = true
-                    if (strVal.includes("under arbitration") || strVal.includes("arb")) isArb = true
-                    if (strVal.includes("in process") || strVal.includes("pending")) foundPending = true
-                    if (strVal.includes("maximum limit") || strVal.includes("reached maximum limit") || strVal.includes("not covered under patient plan") || strVal.includes("not covered")) foundMaxLimit = true
-                }
+                let stdStatus = String(claimStatus || "Unknown").trim()
+                const lowerStatus = stdStatus.toLowerCase();
 
-                let stdStatus = String(claimStatus || "Unknown")
-                if (isDeni) stdStatus = "Denied"
-                else if (foundPaid) stdStatus = "Paid"
-                else if (foundMaxLimit) stdStatus = "Max Limit"
-                else if (foundDeductible) stdStatus = "Deductible"
-                else if (isArb) stdStatus = "Arbitration"
-                else if (foundLop) stdStatus = "LOP"
-                else if (foundPending) stdStatus = "Pending"
+                // Only use the heuristic if there's no meaningful standard status
+                if (stdStatus === "Unknown" || stdStatus === "") {
+                    // try heuristics
+                    for (const val of Object.values(row)) {
+                        const strVal = String(val).toLowerCase()
+                        if (strVal.includes("deni")) isDeni = true
+                        if (strVal.includes("paid")) foundPaid = true
+                        if (strVal.includes("towards deductible") || strVal.includes("towards ded") || strVal.includes("self pay") || strVal.includes("self-pay") || strVal.includes("selfpay") || strVal.includes("patient responsibility")) foundDeductible = true
+                        if (strVal === "lop" || strVal.includes("lop ") || strVal.includes(" lop")) foundLop = true
+                        if (strVal.includes("under arbitration") || strVal.includes("arb")) isArb = true
+                        if (strVal.includes("in process") || strVal.includes("pending")) foundPending = true
+                        if (strVal.includes("maximum limit") || strVal.includes("reached maximum limit") || strVal.includes("not covered under patient plan") || strVal.includes("not covered")) foundMaxLimit = true
+                    }
+
+                    if (isDeni) stdStatus = "Denied"
+                    else if (foundPaid) stdStatus = "Paid"
+                    else if (foundMaxLimit) stdStatus = "Max Limit"
+                    else if (foundDeductible) stdStatus = "Deductible"
+                    else if (isArb) stdStatus = "Arbitration"
+                    else if (foundLop) stdStatus = "LOP"
+                    else if (foundPending) stdStatus = "Pending"
+                } else {
+                    // Update flags based on the provided perfect status
+                    if (lowerStatus.includes("denied")) isDeni = true;
+                    if (lowerStatus.includes("arbitration")) isArb = true;
+                }
 
                 const uniqueId = claimId && !claimId.startsWith("CLM-UNKNOWN") ? claimId : `${sheetName}-${index}`
                 const billedAmt = parseFloat(String(billedAmtRaw).replace(/[^0-9.-]/g, '')) || 0
@@ -105,13 +115,12 @@ export default function UploadPage() {
 
                     const statusPriority = (s: string) => {
                         const low = s.toLowerCase()
-                        if (low === 'denied') return 10
-                        if (low === 'paid') return 9
-                        if (low === 'max limit') return 8
-                        if (low === 'deductible') return 7
-                        if (low === 'arbitration') return 6
-                        if (low === 'lop') return 5
-                        if (low === 'pending') return 4
+                        if (low.includes('denied') || low.includes('deni')) return 10
+                        if (low.includes('paid')) return 9
+                        if (low.includes('maximum limit') || low.includes('not covered')) return 8
+                        if (low.includes('deductible') || low.includes('dedcutible') || low.includes('self pay')) return 7
+                        if (low.includes('arbitration') || low.includes('no oon') || low.includes('lop') || low.includes('benefit exhausted')) return 6
+                        if (low.includes('in process') || low.includes('pending')) return 4
                         return 0
                     }
 

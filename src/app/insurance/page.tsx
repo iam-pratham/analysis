@@ -84,7 +84,7 @@ export default function InsuranceAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground drop-shadow-sm">Insurance Mix Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Insurance Mix Analysis</h1>
             <GlobalFilters />
 
             <motion.div
@@ -162,7 +162,7 @@ export default function InsuranceAnalysisPage() {
                                         {companyStats.slice(0, 10).map((entry, index) => (
                                             <Cell
                                                 key={`cell-${index}`}
-                                                fill={`rgba(255, 255, 255, ${0.9 - (index * 0.08)})`}
+                                                fill={`var(--color-chart-${(index % 5) + 1})`}
                                             />
                                         ))}
                                         <LabelList dataKey="total" position="right" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />

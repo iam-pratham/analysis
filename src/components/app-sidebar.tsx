@@ -53,52 +53,9 @@ export function AppSidebar() {
 
             <SidebarContent className="px-3 overflow-y-auto custom-scrollbar">
                 <SidebarGroup className="mt-2">
-                    <SidebarGroupLabel className="px-4 text-[11px] font-medium tracking-wider text-muted-foreground/40 mb-3 uppercase">
-                        Management
-                    </SidebarGroupLabel>
                     <SidebarGroupContent>
                         <SidebarMenu className="gap-0.5">
-                            {items.slice(0, 2).map((item) => {
-                                const isActive = pathname === item.url
-                                return (
-                                    <SidebarMenuItem key={item.title}>
-                                        <SidebarMenuButton
-                                            asChild
-                                            isActive={isActive}
-                                            className={`
-                                                relative h-10 px-4 rounded-md transition-all duration-200 group
-                                                ${isActive
-                                                    ? "bg-foreground/[0.04] text-foreground font-medium"
-                                                    : "hover:bg-foreground/[0.03] text-muted-foreground hover:text-foreground"
-                                                }
-                                            `}
-                                        >
-                                            <Link href={item.url} className="flex items-center gap-3.5 w-full">
-                                                <item.icon className={`w-4.5 h-4.5 transition-colors duration-200 ${isActive ? "text-primary" : "text-muted-foreground/50 group-hover:text-muted-foreground"}`} />
-                                                <span className="text-[14px] font-medium tracking-tight">{item.title}</span>
-                                                {isActive && (
-                                                    <motion.div
-                                                        layoutId="nav-pill"
-                                                        className="absolute left-0 w-[2px] h-5 bg-primary rounded-full"
-                                                        transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                                                    />
-                                                )}
-                                            </Link>
-                                        </SidebarMenuButton>
-                                    </SidebarMenuItem>
-                                )
-                            })}
-                        </SidebarMenu>
-                    </SidebarGroupContent>
-                </SidebarGroup>
-
-                <SidebarGroup className="mt-2">
-                    <SidebarGroupLabel className="px-4 text-[11px] font-medium tracking-wider text-muted-foreground/40 mb-3 uppercase">
-                        Insights
-                    </SidebarGroupLabel>
-                    <SidebarGroupContent>
-                        <SidebarMenu className="gap-0.5">
-                            {items.slice(2).map((item) => {
+                            {items.map((item) => {
                                 const isActive = pathname === item.url
                                 return (
                                     <SidebarMenuItem key={item.title}>

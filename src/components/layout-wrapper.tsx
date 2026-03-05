@@ -3,9 +3,7 @@
 import { DataProvider } from "@/context/data-context"
 import { AppSidebar } from "./app-sidebar"
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
-import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
-import { Button } from "./ui/button"
 import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 
@@ -46,21 +44,6 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
                                 <div className="flex items-center gap-2">
                                     <SidebarTrigger />
                                 </div>
-                                {mounted && (
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="hover:bg-white/10 dark:hover:bg-white/5 transition-colors"
-                                        onClick={() => setTheme(resolvedTheme === "dark" ? "light" : "dark")}
-                                    >
-                                        {resolvedTheme === "dark" ? (
-                                            <Sun className="h-[1.2rem] w-[1.2rem] transition-all" />
-                                        ) : (
-                                            <Moon className="h-[1.2rem] w-[1.2rem] transition-all" />
-                                        )}
-                                        <span className="sr-only">Toggle theme</span>
-                                    </Button>
-                                )}
                             </header>
                             <div className={`flex-1 bg-transparent ${isDashboard ? 'overflow-hidden pb-4' : 'overflow-auto pb-16'}`}>
                                 {children}

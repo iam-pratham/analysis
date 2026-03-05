@@ -66,7 +66,7 @@ export default function ReportsPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-4xl font-extrabold tracking-tight text-foreground drop-shadow-sm">Raw Data</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Raw Data</h1>
             <GlobalFilters />
 
             <motion.div
