@@ -63,6 +63,7 @@ export function GlobalFilters() {
                                     }
                                     else if (low === "medicaid" || low === "lop") label = "LOP";
                                     else if (low.includes("commercial")) label = "Commercial";
+                                    else if (low.includes("medicare")) label = "Medicare";
                                     return (
                                         <SelectItem key={i} value={i}>
                                             {label}
