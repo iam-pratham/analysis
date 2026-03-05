@@ -10,8 +10,31 @@ export function GlobalFilters() {
 
     if (claims.length === 0) return null
 
-    const providers = Array.from(new Set(claims.map((c) => c.doctorName))).sort()
-    const insurances = Array.from(new Set(claims.map((c) => c.insuranceType))).sort()
+    const providers = Array.from(new Set(claims.map((c) => c.doctorName ? c.doctorName.split(',')[0].trim() : "Unknown Doctor"))).sort()
+    const insurances = Array.from(new Set(claims.map((c) => {
+        let newIns = c.insuranceType || "Unknown Insurance";
+        const low = newIns.toLowerCase();
+        if (
+            low.includes("workers compensation") ||
+            low.includes("worker's compensation") ||
+            low === "wc" ||
+            low.includes("motor vehicle") ||
+            low === "mva" ||
+            low === "mva/wc" ||
+            low === "mva / wc" ||
+            low.includes("mva/wc") ||
+            low.includes("mva / wc")
+        ) {
+            newIns = "MVA/WC";
+        } else if (low === "medicaid" || low === "lop") {
+            newIns = "LOP";
+        } else if (low.includes("commercial")) {
+            newIns = "Commercial";
+        } else if (low.includes("medicare")) {
+            newIns = "Medicare";
+        }
+        return newIns;
+    }))).sort()
 
     const handleProvider = (v: string) => setFilters((prev) => ({ ...prev, provider: v === "all" ? null : v }))
     const handleInsurance = (v: string) => setFilters((prev) => ({ ...prev, insuranceType: v === "all" ? null : v }))
@@ -45,31 +68,11 @@ export function GlobalFilters() {
                             </SelectTrigger>
                             <SelectContent>
                                 <SelectItem value="all">All Insurances</SelectItem>
-                                {insurances.map((i) => {
-                                    let label = i;
-                                    const low = i.toLowerCase();
-                                    if (
-                                        low.includes("workers compensation") ||
-                                        low.includes("worker's compensation") ||
-                                        low === "wc" ||
-                                        low.includes("motor vehicle") ||
-                                        low === "mva" ||
-                                        low === "mva/wc" ||
-                                        low === "mva / wc" ||
-                                        low.includes("mva/wc") ||
-                                        low.includes("mva / wc")
-                                    ) {
-                                        label = "MVA/WC";
-                                    }
-                                    else if (low === "medicaid" || low === "lop") label = "LOP";
-                                    else if (low.includes("commercial")) label = "Commercial";
-                                    else if (low.includes("medicare")) label = "Medicare";
-                                    return (
-                                        <SelectItem key={i} value={i}>
-                                            {label}
-                                        </SelectItem>
-                                    );
-                                })}
+                                {insurances.map((i) => (
+                                    <SelectItem key={i} value={i}>
+                                        {i}
+                                    </SelectItem>
+                                ))}
                             </SelectContent>
                         </Select>
                     </div>

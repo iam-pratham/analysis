@@ -56,23 +56,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
     });
 
     const filteredClaims = React.useMemo(() => {
-        const cleanedClaims = claims.map(c => ({
-            ...c,
-            doctorName: c.doctorName ? c.doctorName.split(',')[0].trim() : "Unknown Doctor",
-            providerName: c.providerName ? c.providerName.split(',')[0].trim() : "Unknown Provider"
-        }))
-
-        return cleanedClaims.filter((claim) => {
-            if (filters.provider && claim.doctorName !== filters.provider) return false;
-            if (filters.doctor && claim.doctorName !== filters.doctor) return false;
-            if (filters.insuranceType && claim.insuranceType !== filters.insuranceType) return false;
-            if (filters.cptCode && !claim.cptCode.includes(filters.cptCode)) return false;
-            if (filters.dateStart && claim.serviceDate < filters.dateStart) return false;
-            if (filters.dateEnd && claim.serviceDate > filters.dateEnd) return false;
-            return true;
-        }).map(claim => {
+        const cleanedClaims = claims.map(c => {
             // Apply naming fixes according to user request
-            let newIns = claim.insuranceType;
+            let newIns = c.insuranceType;
             if (
                 newIns?.toLowerCase().includes("workers compensation") ||
                 newIns?.toLowerCase().includes("worker\'s compensation") ||
@@ -92,10 +78,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
             } else if (newIns?.toLowerCase().includes("medicare")) {
                 newIns = "Medicare";
             }
+
             return {
-                ...claim,
+                ...c,
+                doctorName: c.doctorName ? c.doctorName.split(',')[0].trim() : "Unknown Doctor",
+                providerName: c.providerName ? c.providerName.split(',')[0].trim() : "Unknown Provider",
                 insuranceType: newIns
-            }
+            };
+        });
+
+        return cleanedClaims.filter((claim) => {
+            if (filters.provider && claim.doctorName !== filters.provider) return false;
+            if (filters.doctor && claim.doctorName !== filters.doctor) return false;
+            if (filters.insuranceType && claim.insuranceType !== filters.insuranceType) return false;
+            if (filters.cptCode && !claim.cptCode.includes(filters.cptCode)) return false;
+            if (filters.dateStart && claim.serviceDate < filters.dateStart) return false;
+            if (filters.dateEnd && claim.serviceDate > filters.dateEnd) return false;
+            return true;
         });
     }, [claims, filters]);
 
