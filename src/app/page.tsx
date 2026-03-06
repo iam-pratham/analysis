@@ -49,7 +49,9 @@ export default function DashboardPage() {
     const status = String(c.claimStatus || "").toLowerCase()
     const isNoOon = status.includes("no oon") || status.includes("benefit exhausted")
     if (isNoOon) return false
-    return c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("arbitration") || status.includes("lop")
+    const isArbLop = c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("arbitration") || status.includes("lop")
+    const isDenied = c.denialIndicator || status.includes("denied") || status.includes("deni")
+    return isArbLop || isDenied
   }).length
   const paidCount = filteredClaims.filter((c) =>
     String(c.paymentStatus).toLowerCase().includes("paid") ||

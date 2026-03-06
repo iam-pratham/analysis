@@ -216,7 +216,7 @@ export default function ProviderPage() {
                         </Card>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
+                    <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 flex-1">
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Paid Claims</CardTitle>
@@ -230,24 +230,13 @@ export default function ProviderPage() {
                         </Card>
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Denied Claims</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-red-600">
-                                    {totalDenied}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">Requiring review</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="flex flex-col justify-center h-full">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">ARB Pending</CardTitle>
+                                <CardTitle className="text-sm font-medium">ARB / LOP Volume</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-orange-600">
-                                    {totalArb}
+                                    {totalArb + totalDenied}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Arbitration flagged</p>
+                                <p className="text-xs text-muted-foreground mt-1">Includes all Denied & ARB cases</p>
                             </CardContent>
                         </Card>
                     </motion.div>

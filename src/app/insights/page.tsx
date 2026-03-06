@@ -83,11 +83,10 @@ export default function ReportsPage() {
         const allMetrics = [
             { name: "Deductible / Self Pay", value: deductible, fill: "var(--color-chart-1)" },
             { name: "Pending", value: pendingCount, fill: "var(--color-chart-2)" },
-            { name: "ARB / LOP Volume", value: cardArbLop, fill: "var(--color-chart-3)", isKpi: true },
+            { name: "ARB / LOP Volume", value: cardArbLop + cardDenied, fill: "var(--color-chart-3)", isKpi: true },
             { name: "NO OON Volume", value: cardNoOon, fill: "var(--color-chart-4)", isKpi: true },
             { name: "Max Limit / Not Covered", value: maxLimit, fill: "var(--color-chart-5)" },
-            { name: "Paid Claims", value: cardPaid, fill: "var(--color-chart-6)", isKpi: true },
-            { name: "Denied", value: cardDenied, fill: "var(--color-destructive)", isKpi: true }
+            { name: "Paid Claims", value: cardPaid, fill: "var(--color-chart-6)", isKpi: true }
         ];
 
         const chartItems = [
@@ -124,7 +123,7 @@ export default function ReportsPage() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid gap-4 md:grid-cols-3 lg:grid-cols-7"
+                className="grid gap-4 md:grid-cols-3 lg:grid-cols-6"
             >
                 {metrics.map((sm: any, i: number) => (
                     <motion.div variants={itemVariants} key={i}>
