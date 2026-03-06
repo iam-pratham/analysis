@@ -109,11 +109,12 @@ export default function UploadPage() {
 
                 // Only use the heuristic if there's no meaningful standard status
                 if (stdStatus === "Unknown" || stdStatus === "") {
-                    // try heuristics
+                    // try heuristics — use specific status names matching the Reports page exactly
+                    let heuristicStatus = ""
                     for (const val of Object.values(row)) {
                         const strVal = String(val).toLowerCase()
                         if (strVal.includes("deni")) isDeni = true
-                        if (strVal.includes("paid")) foundPaid = true
+                        if (strVal.includes("paid with patient") || strVal.includes("paid correctly") || strVal.includes("paid with 50%")) { foundPaid = true }
                         if (strVal.includes("towards deductible") || strVal.includes("towards ded") || strVal.includes("self pay") || strVal.includes("self-pay") || strVal.includes("selfpay") || strVal.includes("patient responsibility")) foundDeductible = true
                         if (strVal === "lop" || strVal.includes("lop ") || strVal.includes(" lop")) foundLop = true
                         if (strVal.includes("under arbitration") || strVal.includes("arb")) isArb = true
@@ -121,16 +122,18 @@ export default function UploadPage() {
                         if (strVal.includes("maximum limit") || strVal.includes("reached maximum limit") || strVal.includes("not covered under patient plan") || strVal.includes("not covered")) foundMaxLimit = true
                     }
 
-                    if (isDeni) stdStatus = "Denied"
-                    else if (foundPaid) stdStatus = "Paid"
-                    else if (foundMaxLimit) stdStatus = "Max Limit"
-                    else if (foundDeductible) stdStatus = "Deductible"
-                    else if (isArb) stdStatus = "Arbitration"
-                    else if (foundLop) stdStatus = "LOP"
-                    else if (foundPending) stdStatus = "Pending"
+                    if (isDeni) heuristicStatus = "Denied"
+                    else if (foundPaid) heuristicStatus = "Paid Correctly"
+                    else if (foundMaxLimit) heuristicStatus = "Reached Maximum Limit"
+                    else if (foundDeductible) heuristicStatus = "Towards Deductible"
+                    else if (isArb) heuristicStatus = "Under Arbitration"
+                    else if (foundLop) heuristicStatus = "LOP"
+                    else if (foundPending) heuristicStatus = "In Process"
+
+                    if (heuristicStatus) stdStatus = heuristicStatus
                 } else {
-                    // Update flags based on the provided perfect status
-                    if (lowerStatus.includes("denied")) isDeni = true;
+                    // Update flags based on the provided status
+                    if (lowerStatus.includes("denied") || lowerStatus.includes("deni")) isDeni = true;
                     if (lowerStatus.includes("arbitration")) isArb = true;
                 }
 

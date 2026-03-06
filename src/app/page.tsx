@@ -46,18 +46,32 @@ export default function DashboardPage() {
   // Calculate KPIs
   const totalClaims = filteredClaims.length
   const arbCount = filteredClaims.filter((c) => {
-    const status = String(c.claimStatus || "").toLowerCase()
-    const isNoOon = status.includes("no oon") || status.includes("benefit exhausted")
-    if (isNoOon) return false
-    const isArbLop = c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("arbitration") || status.includes("lop")
-    const isDenied = c.denialIndicator || status.includes("denied") || status.includes("deni")
-    return isArbLop || isDenied
+    const s = String(c.claimStatus || "").toLowerCase().trim()
+    // Exclude claims whose status explicitly places them in another category
+    if (s.includes("paid correctly") || s.includes("paid with 50%") || s.includes("paid with patient")) return false
+    if (s.includes("towards dedcutible") || s.includes("towards deductible") || s.includes("self pay")) return false
+    if (s.includes("in process") || s.includes("pending")) return false
+    if (s.includes("not covered under patient") || s.includes("reached maximum limit") || s.includes("efforts exhausted")) return false
+    if (s.includes("no oon") || s.includes("benefit exhausted")) return false
+    // Only count genuine ARB or LOP
+    const isLop = String(c.insuranceType || "").toUpperCase() === "LOP" || s === "lop" || s.includes("/lop")
+    const isArb = c.arbFlag || s.includes("under arbitration") || s.includes("arbitration")
+    return isLop || isArb
   }).length
-  const paidCount = filteredClaims.filter((c) =>
-    String(c.paymentStatus).toLowerCase().includes("paid") ||
-    String(c.claimStatus).toLowerCase().includes("paid")
-  ).length
-  const unpaidCount = totalClaims - (paidCount)
+  const deductibleCount = filteredClaims.filter((c) => {
+    const status = String(c.claimStatus || "").toLowerCase()
+    return status.includes("towards deductible") || status.includes("towards dedcutible") || status.includes("deductible")
+  }).length
+  const selfPayCount = filteredClaims.filter((c) => {
+    const status = String(c.claimStatus || "").toLowerCase()
+    const payStatus = String(c.paymentStatus || "").toLowerCase()
+    return status.includes("self pay") || status.includes("selfpay") || payStatus.includes("selfpay")
+  }).length
+  const paidCount = filteredClaims.filter((c) => {
+    const s = String(c.claimStatus || "").toLowerCase().trim()
+    return s.includes("paid correctly") || s.includes("paid with 50%") || s.includes("paid with patient")
+  }).length
+  const unpaidCount = totalClaims - paidCount - arbCount
 
   // Generate Monthly Claims Data (DOS)
   const monthMap: Record<string, number> = {}
@@ -151,7 +165,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-green-600">{paidCount.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{((paidCount / totalClaims) * 100 || 0).toFixed(1)}% of total volume</p>
+              <p className="text-xs text-muted-foreground mt-1">{((paidCount / totalClaims) * 100 || 0).toFixed(1)}% of total</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -163,7 +177,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-red-600">{unpaidCount.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{((unpaidCount / totalClaims) * 100 || 0).toFixed(1)}% of total volume</p>
+              <p className="text-xs text-muted-foreground mt-1">{((unpaidCount / totalClaims) * 100 || 0).toFixed(1)}% of total</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -175,7 +189,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-orange-600">{arbCount.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{((arbCount / totalClaims) * 100 || 0).toFixed(1)}% of total volume</p>
+              <p className="text-xs text-muted-foreground mt-1">{((arbCount / totalClaims) * 100 || 0).toFixed(1)}% of total</p>
             </CardContent>
           </Card>
         </motion.div>

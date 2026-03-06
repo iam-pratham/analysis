@@ -94,12 +94,12 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 nameLower.includes('sridhar yalamanchili') ||
                 nameLower.includes('marianne decastro') ||
                 nameLower.includes('andy koser') ||
-                nameLower.includes('david adin') ||
-                nameLower.includes('billy ford') ||
                 nameLower.includes('sferra') ||
                 nameLower.includes('sferry')
             ) {
                 docSuffix = " - PT";
+            } else if (nameLower.includes('david adin') || nameLower.includes('billy ford')) {
+                docSuffix = " - Pain Mgmt";
             } else if (nameLower.includes('madison lynn smith') || nameLower.includes('sclafani')) {
                 docSuffix = " - OT";
             } else if (nameLower.includes('chiro')) {

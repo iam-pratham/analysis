@@ -234,9 +234,9 @@ export default function ProviderPage() {
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-orange-600">
-                                    {totalArb + totalDenied}
+                                    {totalArb}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Includes all Denied & ARB cases</p>
+                                <p className="text-xs text-muted-foreground mt-1">Arbitration & LOP cases</p>
                             </CardContent>
                         </Card>
                     </motion.div>

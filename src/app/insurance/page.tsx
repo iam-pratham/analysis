@@ -82,7 +82,7 @@ export default function InsuranceAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT Insurance Mix Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT Insurance Category Mix</h1>
             <GlobalFilters />
 
             <motion.div
@@ -98,7 +98,7 @@ export default function InsuranceAnalysisPage() {
                             <CardDescription>Distribution by insurance category</CardDescription>
                         </CardHeader>
                         <CardContent className="pb-6 flex flex-col items-center">
-                            <div className="relative w-full aspect-square max-h-[350px] mt-4">
+                            <div className="relative w-full aspect-square max-h-[420px] mt-4">
                                 <ChartContainer config={chartConfig} className="w-full h-full">
                                     <ResponsiveContainer width="100%" height="100%">
                                         <PieChart>
@@ -108,11 +108,29 @@ export default function InsuranceAnalysisPage() {
                                                 nameKey="category"
                                                 cx="50%"
                                                 cy="50%"
-                                                innerRadius="65%"
-                                                outerRadius="90%"
-                                                paddingAngle={5}
+                                                innerRadius="52%"
+                                                outerRadius="72%"
+                                                paddingAngle={3}
                                                 strokeWidth={2}
                                                 stroke="var(--background)"
+                                                label={({ cx, cy, midAngle, outerRadius, category, total, percent }) => {
+                                                    const RADIAN = Math.PI / 180;
+                                                    const radius = outerRadius + 36;
+                                                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                                                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                                                    const anchor = x > cx ? "start" : "end";
+                                                    return (
+                                                        <g>
+                                                            <text x={x} y={y - 9} textAnchor={anchor} fill="var(--foreground)" fontSize={11} fontWeight={700}>
+                                                                {category}
+                                                            </text>
+                                                            <text x={x} y={y + 6} textAnchor={anchor} fill="var(--muted-foreground)" fontSize={11} fontWeight={500}>
+                                                                {total.toLocaleString()} ({((percent ?? 0) * 100).toFixed(1)}%)
+                                                            </text>
+                                                        </g>
+                                                    );
+                                                }}
+                                                labelLine={{ stroke: "var(--border)", strokeWidth: 1 }}
                                             >
                                                 {categoryStats.map((_, index) => (
                                                     <Cell
@@ -130,28 +148,11 @@ export default function InsuranceAnalysisPage() {
                                 </ChartContainer>
 
                                 {/* Center Aggregate Statistics */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none scale-90">
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                                     <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-muted-foreground/30">Total Volume</span>
                                     <span className="text-4xl font-black text-foreground">{filteredClaims.length.toLocaleString()}</span>
                                     <span className="text-[10px] font-bold text-primary mt-1 uppercase tracking-widest">Insurance Mix</span>
                                 </div>
-                            </div>
-
-                            <div className="mt-8 w-full grid grid-cols-2 gap-4">
-                                {categoryStats.map((s, idx) => (
-                                    <div key={s.category} className="flex flex-col p-3 rounded-xl bg-muted/20 border border-border/40 group hover:border-primary/20 transition-all">
-                                        <div className="flex items-center gap-2 mb-1.5">
-                                            <div className={`w-1.5 h-1.5 rounded-full bg-[var(--color-chart-${(idx % 5) + 1})]`} />
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{s.category}</span>
-                                        </div>
-                                        <div className="flex items-baseline justify-between">
-                                            <span className="text-lg font-bold tracking-tight">{s.total.toLocaleString()}</span>
-                                            <span className="text-[10px] font-bold text-primary">
-                                                {((s.total / filteredClaims.length) * 100).toFixed(1)}%
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
                             </div>
                         </CardContent>
                     </Card>
