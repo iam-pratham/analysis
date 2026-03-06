@@ -81,8 +81,8 @@ export default function DashboardPage() {
 
       monthlyData.push({
         sortKey: key,
-        name: d.toLocaleString('default', { month: 'long', year: 'numeric' }),
-        shortName: d.toLocaleString('default', { month: 'short', year: 'numeric' }),
+        name: d.toLocaleString('default', { month: 'long' }),
+        shortName: d.toLocaleString('default', { month: 'short' }),
         value: monthMap[key] || 0
       });
 
@@ -114,7 +114,7 @@ export default function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT - Claims Analysis</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT Claims Analysis</h1>
       </div>
 
       <GlobalFilters />
@@ -190,17 +190,7 @@ export default function DashboardPage() {
               <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 min-h-[500px] mt-4">
                 {/* Main Timeline Chart */}
                 <div className="lg:col-span-8 flex flex-col h-full bg-muted/20 rounded-2xl p-6 border border-border/50">
-                  <div className="flex items-center justify-between mb-8">
-                    <div>
-                      <h3 className="text-lg font-semibold">Volume Timeline</h3>
-                      <p className="text-sm text-muted-foreground italic">Monthly distribution of processed claims</p>
-                    </div>
-                    {stats.peak && (
-                      <div className="text-right">
-                        <span className="text-xs font-medium text-muted-foreground block">PEAK PERFORMANCE</span>
-                        <span className="text-xl font-bold text-primary">{stats.peak.value} <span className="text-sm font-medium">Claims</span></span>
-                      </div>
-                    )}
+                  <div className="mb-8">
                   </div>
 
                   <div className="flex-1 w-full min-h-[350px]">

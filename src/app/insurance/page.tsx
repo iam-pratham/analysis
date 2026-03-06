@@ -43,7 +43,7 @@ const CustomizedTreemapContent = (props: any) => {
                         fontWeight="700"
                         className="pointer-events-none"
                     >
-                        {name.length > 20 ? name.substring(0, 18) + "..." : name}
+                        {(name || "").length > 20 ? (name || "").substring(0, 18) + "..." : (name || "")}
                     </text>
                     <text
                         x={x + 12}
@@ -128,7 +128,7 @@ export default function InsuranceAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT - Insurance Mix Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT Insurance Mix Analysis</h1>
             <GlobalFilters />
 
             <motion.div
