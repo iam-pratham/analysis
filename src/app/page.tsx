@@ -114,7 +114,7 @@ export default function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru december 2025 - Chiro / PT / OT - Claims Analysis</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT - Claims Analysis</h1>
       </div>
 
       <GlobalFilters />

@@ -74,7 +74,7 @@ export default function CptAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru december 2025 - Chiro / PT / OT - CPT Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT - CPT Analysis</h1>
             <GlobalFilters />
 
             <motion.div
