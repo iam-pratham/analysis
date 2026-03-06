@@ -31,17 +31,22 @@ const itemVariants = {
 export default function ProviderPage() {
     const { filteredClaims, claims } = useData()
 
-    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalDenied, totalArb } = useMemo(() => {
+    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalDenied, totalArb, totalChiro, totalPT, totalOT } = useMemo(() => {
         const pMap: Record<string, number> = {}
         let tBilled = 0
         let tPaid = 0
         let tPaidClaims = 0
         let tDenied = 0
         let tArb = 0
+        let tChiro = 0
+        let tPT = 0
+        let tOT = 0
 
         filteredClaims.forEach(c => {
             const status = String(c.claimStatus || (c as any).report || '').toLowerCase();
             const name = c.doctorName || "Unknown"
+            const nameLower = name.toLowerCase()
+
             pMap[name] = (pMap[name] || 0) + 1
             tBilled += (c.billedAmt || 0)
             tPaid += (c.paidAmt || 0)
@@ -50,8 +55,27 @@ export default function ProviderPage() {
             if (status.includes('paid')) tPaidClaims++
             if (c.denialIndicator) tDenied++
             if (c.arbFlag) tArb++
+
+            // Categorization based on provided doctor list
+            const isChiro = nameLower.includes('jay e brecker') || nameLower.includes('peter j berger') || nameLower.includes('chiro');
+            const isPT = nameLower.includes('bruce j buckman') || nameLower.includes('christian s gartner') || nameLower.includes('monreo castro') || nameLower.includes('sridhar yalamanchili') || nameLower.includes('marianne decastro') || nameLower.includes('andy koser') || nameLower.includes('pt') || nameLower.includes('physical therapy');
+            const isOT = nameLower.includes('madison lynn smith') || nameLower.includes('ot') || nameLower.includes('occupational therapy');
+
+            if (isChiro) tChiro++
+            if (isPT) tPT++
+            if (isOT) tOT++
         })
-        return { providerVolumeMap: pMap, totalBilled: tBilled, totalPaid: tPaid, totalPaidClaims: tPaidClaims, totalDenied: tDenied, totalArb: tArb }
+        return {
+            providerVolumeMap: pMap,
+            totalBilled: tBilled,
+            totalPaid: tPaid,
+            totalPaidClaims: tPaidClaims,
+            totalDenied: tDenied,
+            totalArb: tArb,
+            totalChiro: tChiro,
+            totalPT: tPT,
+            totalOT: tOT
+        }
     }, [filteredClaims])
 
     const providerData = useMemo(() => Object.keys(providerVolumeMap).map(k => ({ name: k, claims: providerVolumeMap[k] })).sort((a, b) => b.claims - a.claims), [providerVolumeMap])
@@ -67,13 +91,15 @@ export default function ProviderPage() {
         return Object.keys(map).map(k => ({ cpt: k, usage: map[k] })).sort((a, b) => b.usage - a.usage)
     }, [filteredClaims])
 
+    const totalCptUsages = useMemo(() => cptData.reduce((acc, curr) => acc + curr.usage, 0), [cptData])
+
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
     }
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Provider Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">2025 - Chiro / PT / OT - Provider Analysis</h1>
 
             <GlobalFilters />
 
@@ -91,7 +117,7 @@ export default function ProviderPage() {
                         </CardHeader>
                         <CardContent className="flex-1 pb-4">
                             <ChartContainer config={volumeConfig} className="min-h-[400px] w-full">
-                                <BarChart accessibilityLayer data={providerData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 30, left: 10, bottom: 5 }}>
+                                <BarChart accessibilityLayer data={providerData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 120, left: 10, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.2} />
                                     <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                     <YAxis type="category" dataKey="name" width={100} tickLine={false} axisLine={false} style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }} />
@@ -103,7 +129,14 @@ export default function ProviderPage() {
                                                 fill={`var(--color-chart-${(index % 5) + 1})`}
                                             />
                                         ))}
-                                        <LabelList dataKey="claims" position="right" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
+                                        <LabelList
+                                            dataKey="claims"
+                                            position="right"
+                                            offset={10}
+                                            className="fill-foreground/80 font-bold"
+                                            fontSize={11}
+                                            formatter={(val: number) => `${val.toLocaleString()} (${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                        />
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>
@@ -112,30 +145,63 @@ export default function ProviderPage() {
                 </motion.div>
 
                 <div className="flex flex-col gap-4 h-full">
-                    <motion.div variants={itemVariants} className="flex-1 flex flex-col justify-center">
-                        <Card className="h-full flex flex-col justify-center">
+                    <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 flex-1">
+                        <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Total Billed Amount</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-3xl font-bold">
+                                <div className="text-3xl font-bold text-foreground">
                                     ${totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">Aggregated billed charges</p>
                             </CardContent>
                         </Card>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants} className="flex-1 flex flex-col justify-center">
-                        <Card className="h-full flex flex-col justify-center">
+                        <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Total Paid Amount</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-3xl font-bold">
+                                <div className="text-3xl font-bold text-foreground">
                                     ${totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">Actual collected payments</p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Chiro Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-[var(--color-chart-1)]">
+                                    {totalChiro}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Assigned provider</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">PT Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-[var(--color-chart-2)]">
+                                    {totalPT}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Assigned provider</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">OT Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-[var(--color-chart-4)]">
+                                    {totalOT}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Assigned provider</p>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -217,7 +283,14 @@ export default function ProviderPage() {
                                                 fill={`var(--color-chart-${(index % 5) + 1})`}
                                             />
                                         ))}
-                                        <LabelList dataKey="usage" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
+                                        <LabelList
+                                            dataKey="usage"
+                                            position="top"
+                                            offset={10}
+                                            className="fill-foreground/80 font-bold"
+                                            fontSize={11}
+                                            formatter={(val: number) => `${val.toLocaleString()} (${((val / totalCptUsages) * 100 || 0).toFixed(1)}%)`}
+                                        />
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>

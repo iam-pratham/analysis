@@ -27,7 +27,7 @@ import { motion, AnimatePresence } from "framer-motion"
 
 const items = [
     { title: "Upload Data", url: "/upload", icon: UploadCloud },
-    { title: "Dashboard", url: "/", icon: LayoutDashboard },
+    { title: "Claims Analysis", url: "/", icon: LayoutDashboard },
     { title: "Provider Analysis", url: "/provider", icon: Users },
     { title: "CPT Metrics", url: "/cpt", icon: Activity },
     { title: "Insurance Analysis", url: "/insurance", icon: ShieldPlus },
@@ -70,9 +70,8 @@ export function AppSidebar() {
                                                 }
                                             `}
                                         >
-                                            <Link href={item.url} className="flex items-center gap-3.5 w-full">
-                                                <item.icon className={`w-4.5 h-4.5 transition-colors duration-200 ${isActive ? "text-primary" : "text-muted-foreground/50 group-hover:text-muted-foreground"}`} />
-                                                <span className="text-[14px] font-medium tracking-tight">{item.title}</span>
+                                            <Link href={item.url} className="flex items-center w-full px-2">
+                                                <span className="text-[14px] font-bold tracking-tight">{item.title}</span>
                                                 {isActive && (
                                                     <motion.div
                                                         layoutId="nav-pill"
@@ -90,10 +89,20 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            <div className="mt-auto p-7 pt-4">
-                <div className="flex items-center gap-2.5 px-2 group cursor-default">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/80 shadow-[0_0_8px_rgba(16,185,129,0.3)] group-hover:bg-emerald-500 transition-colors" />
-                    <span className="text-[11px] font-medium text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors tracking-wide">Analytic Engine v2.4</span>
+            <div className="mt-auto p-6 border-t border-border/10">
+                <div className="flex flex-col gap-1.5 px-1 group cursor-default">
+                    <span className="text-[8px] uppercase font-bold tracking-[0.3em] text-muted-foreground/30 group-hover:text-muted-foreground/50 transition-colors">
+                        Authorized Access Only
+                    </span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-medium text-muted-foreground/50 group-hover:text-muted-foreground/70 transition-colors tracking-wide">
+                            © 2025 SHMB
+                        </span>
+                        <span className="text-[11px] font-medium text-muted-foreground/20">•</span>
+                        <span className="text-[11px] font-medium text-muted-foreground/50 group-hover:text-muted-foreground/70 transition-colors tracking-wide">
+                            All Rights Reserved
+                        </span>
+                    </div>
                 </div>
             </div>
         </Sidebar>

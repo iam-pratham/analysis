@@ -4,9 +4,63 @@ import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlobalFilters } from "@/components/global-filters"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, PieChart, Pie, LabelList, Cell } from "recharts"
-import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from "@/components/ui/chart"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Treemap, ResponsiveContainer, Cell, LabelList } from "recharts"
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
 import { motion } from "framer-motion"
+import { Shield, CreditCard, Briefcase, Activity, Landmark, Layers } from "lucide-react"
+
+const CustomizedTreemapContent = (props: any) => {
+    const { x, y, width, height, index, name, value, total, fill } = props;
+    const percentage = ((value / total) * 100).toFixed(1);
+
+    if (width < 30 || height < 30) return null;
+
+    return (
+        <g>
+            <rect
+                x={x}
+                y={y}
+                width={width}
+                height={height}
+                fill={fill}
+                fillOpacity={0.85}
+                rx={8}
+                ry={8}
+                style={{
+                    filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.1))",
+                    stroke: 'white',
+                    strokeWidth: 1,
+                    strokeOpacity: 0.1
+                }}
+            />
+            {width > 100 && height > 50 && (
+                <>
+                    <text
+                        x={x + 12}
+                        y={y + 24}
+                        fill="white"
+                        fontSize={13}
+                        fontWeight="700"
+                        className="pointer-events-none"
+                    >
+                        {name.length > 20 ? name.substring(0, 18) + "..." : name}
+                    </text>
+                    <text
+                        x={x + 12}
+                        y={y + 42}
+                        fill="white"
+                        fillOpacity={0.9}
+                        fontSize={11}
+                        fontWeight="500"
+                        className="pointer-events-none"
+                    >
+                        {value} / {percentage}%
+                    </text>
+                </>
+            )}
+        </g>
+    );
+};
 
 // removed static pieConfig
 const barConfig = {
@@ -56,27 +110,17 @@ export default function InsuranceAnalysisPage() {
         })).sort((a, b) => b.total - a.total)
     }, [filteredClaims])
 
-    const pieData = categoryStats.slice(0, 5).map((s, idx) => {
-        const pieColors = ["var(--color-chart-1)", "var(--color-chart-2)", "var(--color-chart-3)", "var(--color-chart-4)", "var(--color-chart-5)"];
-        return {
-            name: s.category,
-            value: s.total,
-            fill: pieColors[idx % 5]
-        }
-    })
+    const treemapData = categoryStats.map((s, idx) => ({
+        name: s.category,
+        size: s.total,
+        value: s.total,
+        total: filteredClaims.length,
+        fill: `var(--color-chart-${(idx % 5) + 1})`
+    }))
 
-    const dynamicPieConfig = useMemo(() => {
-        const config: ChartConfig = {
-            value: { label: "Volume" }
-        }
-        pieData.forEach((d) => {
-            config[d.name] = {
-                label: d.name,
-                color: d.fill
-            }
-        })
-        return config
-    }, [pieData])
+    const dynamicConfig = {
+        value: { label: "Claims" }
+    } satisfies ChartConfig
 
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
@@ -84,7 +128,7 @@ export default function InsuranceAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Insurance Mix Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">2025 - Chiro / PT / OT - Insurance Mix Analysis</h1>
             <GlobalFilters />
 
             <motion.div
@@ -99,30 +143,26 @@ export default function InsuranceAnalysisPage() {
                             <CardTitle>Insurance Category Mix</CardTitle>
                             <CardDescription>Distribution by insurance category</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-1 pb-4 flex flex-col items-center justify-center">
-                            <ChartContainer config={dynamicPieConfig} className="mx-auto w-full max-w-[400px] h-[350px]">
-                                <PieChart>
-                                    <ChartTooltip
-                                        cursor={false}
-                                        content={<ChartTooltipContent hideLabel />}
-                                    />
-                                    <Pie
-                                        data={pieData}
-                                        cx="50%"
-                                        cy="50%"
-                                        innerRadius={70}
-                                        outerRadius={120}
-                                        paddingAngle={4}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        labelLine={{ stroke: "var(--color-border)", strokeWidth: 1 }}
-                                        label={{ fill: "var(--color-foreground)", fontSize: 12, fontWeight: "medium" }}
-                                        stroke="none"
+                        <CardContent className="flex-1 pb-4">
+                            <ChartContainer config={dynamicConfig} className="mx-auto w-full h-[400px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <Treemap
+                                        data={treemapData}
+                                        dataKey="size"
+                                        stroke="#fff"
+                                        content={<CustomizedTreemapContent />}
                                     >
-                                    </Pie>
-                                    <ChartLegend className="flex-wrap gap-4 pb-4" content={<ChartLegendContent />} />
-                                </PieChart>
+                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                    </Treemap>
+                                </ResponsiveContainer>
                             </ChartContainer>
+                            <div className="mt-4 grid grid-cols-2 gap-2">
+                                {treemapData.slice(0, 4).map((d) => (
+                                    <div key={d.name} className="flex items-center gap-2 p-2 rounded-md bg-muted/30 border border-border/50">
+                                        <span className="text-[10px] font-bold truncate uppercase tracking-widest text-muted-foreground/60">{d.name}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </CardContent>
                     </Card>
                 </motion.div>
@@ -135,7 +175,7 @@ export default function InsuranceAnalysisPage() {
                         </CardHeader>
                         <CardContent className="flex-1 pb-4">
                             <ChartContainer config={barConfig} className="min-h-[400px] w-full">
-                                <BarChart accessibilityLayer data={companyStats.slice(0, 10)} layout="vertical" margin={{ top: 20, right: 30, left: 10, bottom: 5 }}>
+                                <BarChart accessibilityLayer data={companyStats.slice(0, 10)} layout="vertical" margin={{ top: 20, right: 120, left: 10, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.2} />
                                     <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                     <YAxis
@@ -165,7 +205,14 @@ export default function InsuranceAnalysisPage() {
                                                 fill={`var(--color-chart-${(index % 5) + 1})`}
                                             />
                                         ))}
-                                        <LabelList dataKey="total" position="right" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
+                                        <LabelList
+                                            dataKey="total"
+                                            position="right"
+                                            offset={10}
+                                            className="fill-foreground/80 font-bold"
+                                            fontSize={11}
+                                            formatter={(val: number) => `${val.toLocaleString()} (${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                        />
                                     </Bar>
                                 </BarChart>
                             </ChartContainer>

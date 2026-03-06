@@ -9,6 +9,12 @@ import { Button } from "@/components/ui/button"
 import { FileSpreadsheet, CheckCircle2, AlertCircle, Wand2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 
+function toTitleCase(str: string) {
+    return str.toLowerCase().split(' ').map(function (word) {
+        return (word.charAt(0).toUpperCase() + word.slice(1));
+    }).join(' ');
+}
+
 export default function UploadPage() {
     const { setClaims, setIsLoading } = useData()
     const router = useRouter()
@@ -38,8 +44,8 @@ export default function UploadPage() {
                 }
 
                 const claimId = String(getVal(["claim id", "claim #", "claim number"]) || "")
-                const providerName = String(getVal(["service location", "location", "service provider", "provider"]) || "").split(',')[0].trim()
-                const doctorName = String(getVal(["attending physician", "attending", "doctor", "physician"]) || "").split(',')[0].trim()
+                const providerName = toTitleCase(String(getVal(["service location", "location", "service provider", "provider"]) || "").split(',')[0].trim())
+                const doctorName = toTitleCase(String(getVal(["attending physician", "attending", "doctor", "physician"]) || "").split(',')[0].trim())
                 const insuranceCompany = String(getVal(["insurance company", "company", "insurance name"]) || "")
                 const insuranceType = String(getVal(["insurance category", "category", "insurance type", "payer", "plan"]) || "")
                 const cptCode = String(getVal(["cpt codes", "cpt code", "cpt", "procedure", "hcpcs"]) || "")
@@ -55,7 +61,35 @@ export default function UploadPage() {
                 const parseDate = (raw: unknown) => {
                     if (!raw) return null
                     if (typeof raw === "number") return new Date(Math.round((raw - 25569) * 86400 * 1000))
-                    return new Date(raw as string)
+
+                    if (typeof raw === "string") {
+                        const str = raw.trim();
+                        // Handle 6-digit mmddyy
+                        if (/^\d{6}$/.test(str)) {
+                            const m = parseInt(str.substring(0, 2), 10);
+                            const d = parseInt(str.substring(2, 4), 10);
+                            let y = parseInt(str.substring(4, 6), 10);
+                            y += (y < 50 ? 2000 : 1900);
+                            return new Date(y, m - 1, d);
+                        }
+                        // Handle MM/DD/YY or MM/DD/YYYY or MM-DD-YY/YYYY
+                        const parts = str.split(/[\/\-]/);
+                        if (parts.length === 3) {
+                            let m = parseInt(parts[0], 10);
+                            let d = parseInt(parts[1], 10);
+                            let y = parseInt(parts[2], 10);
+
+                            if (!isNaN(m) && !isNaN(d) && !isNaN(y)) {
+                                if (parts[2].length === 2) {
+                                    y += (y < 50 ? 2000 : 1900);
+                                }
+                                return new Date(y, m - 1, d);
+                            }
+                        }
+                    }
+
+                    const d = new Date(raw as string);
+                    return isNaN(d.getTime()) ? null : d;
                 }
 
                 const serviceDate = parseDate(serviceDateRaw) || new Date()
@@ -140,7 +174,7 @@ export default function UploadPage() {
                         insuranceCompany: insuranceCompany || "Unknown Company",
                         insuranceType: insuranceType || "Unknown Insurance",
                         payerId: String(getVal(["payer edi id", "payer edi", "payer id", "payer #", "payer number"]) || ""),
-                        patientName: String(getVal(["patient", "patient name", "subscriber"]) || "Unknown Patient"),
+                        patientName: toTitleCase(String(getVal(["patient", "patient name", "subscriber"]) || "Unknown Patient")),
                         serviceDate,
                         claimSentDate,
                         billedAmt,
@@ -226,7 +260,7 @@ export default function UploadPage() {
         <div className="p-6 max-w-4xl mx-auto mt-10">
             <Card className="shadow-lg border-0 bg-card">
                 <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-3xl font-bold tracking-tight">Upload Medical Claims</CardTitle>
+                    <CardTitle className="text-3xl font-bold tracking-tight">2025 - Chiro / PT / OT - Upload Medical Claims</CardTitle>
                     <CardDescription className="text-lg mt-2">
                         Upload your Excel spreadsheet (.xlsx, .xls) or CSV file containing claim-level data.
                     </CardDescription>

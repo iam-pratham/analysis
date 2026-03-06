@@ -44,10 +44,10 @@ export function GlobalFilters() {
             <div className="flex items-center gap-4">
                 <span className="text-sm font-semibold text-muted-foreground">Global Filters:</span>
 
-                <div className="flex items-center gap-0">
-                    <div className="w-[150px]">
+                <div className="flex items-center gap-4">
+                    <div className="w-auto min-w-[150px] max-w-[250px]">
                         <Select value={filters.provider || "all"} onValueChange={handleProvider}>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Provider" />
                             </SelectTrigger>
                             <SelectContent>
@@ -61,9 +61,9 @@ export function GlobalFilters() {
                         </Select>
                     </div>
 
-                    <div className="w-[150px]">
+                    <div className="w-auto min-w-[150px] max-w-[250px]">
                         <Select value={filters.insuranceType || "all"} onValueChange={handleInsurance}>
-                            <SelectTrigger>
+                            <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Insurance" />
                             </SelectTrigger>
                             <SelectContent>
@@ -81,8 +81,7 @@ export function GlobalFilters() {
 
             <Button
                 variant="ghost"
-                size="icon"
-                title="Clear Filters"
+                className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground hover:text-primary transition-colors h-auto py-2"
                 onClick={() => setFilters({
                     provider: null,
                     doctor: null,
@@ -92,7 +91,7 @@ export function GlobalFilters() {
                     dateEnd: null,
                 })}
             >
-                <FilterX className="h-4 w-4" />
+                Clear Filters
             </Button>
         </div>
     )

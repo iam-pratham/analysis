@@ -52,9 +52,19 @@ export default function CptAnalysisPage() {
             total: map[k].total,
             arb: map[k].arb,
             denied: map[k].denied,
-            denialRate: ((map[k].denied / map[k].total) * 100).toFixed(1)
+            denialRate: ((map[k].denied / map[k].total) * 100).toFixed(1),
+            totalLabel: `${map[k].total.toLocaleString()}`,
+            deniedLabel: `${map[k].denied.toLocaleString()}`
         })).sort((a, b) => b.total - a.total)
     }, [filteredClaims])
+
+    const totalCptUsages = useMemo(() => cptStats.reduce((acc, curr) => acc + curr.total, 0), [cptStats])
+
+    const chartsData = useMemo(() => cptStats.slice(0, 15).map(s => ({
+        ...s,
+        totalPercentLabel: `${s.total} (${((s.total / totalCptUsages) * 100 || 0).toFixed(1)}%)`,
+        deniedPercentLabel: `${s.denied} (${s.denialRate}%)`
+    })), [cptStats, totalCptUsages])
 
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
@@ -64,7 +74,7 @@ export default function CptAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">CPT Analysis</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">2025 - Chiro / PT / OT - CPT Analysis</h1>
             <GlobalFilters />
 
             <motion.div
@@ -81,7 +91,7 @@ export default function CptAnalysisPage() {
                         </CardHeader>
                         <CardContent className="flex-1 pb-4">
                             <ChartContainer config={chartConfig} className="min-h-[400px] w-full">
-                                <BarChart accessibilityLayer data={topCpts} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                                <BarChart accessibilityLayer data={chartsData} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
                                     <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
                                     <XAxis
                                         dataKey="cpt"
@@ -102,7 +112,7 @@ export default function CptAnalysisPage() {
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent indicator="dashed" />} />
                                     <ChartLegend content={<ChartLegendContent />} />
                                     <Bar dataKey="total" radius={[4, 4, 0, 0]}>
-                                        {topCpts.map((entry, index) => (
+                                        {chartsData.map((entry, index) => (
                                             <Cell
                                                 key={`cell-total-${index}`}
                                                 fill={`var(--color-chart-${(index % 5) + 1})`}
@@ -111,7 +121,7 @@ export default function CptAnalysisPage() {
                                         <LabelList dataKey="total" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
                                     </Bar>
                                     <Bar dataKey="denied" radius={[4, 4, 0, 0]}>
-                                        {topCpts.map((entry, index) => (
+                                        {chartsData.map((entry, index) => (
                                             <Cell
                                                 key={`cell-denied-${index}`}
                                                 fill="var(--color-destructive)"

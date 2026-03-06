@@ -13,7 +13,6 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
     const [preloading, setPreloading] = useState(true)
     const [fadeOut, setFadeOut] = useState(false)
     const pathname = usePathname()
-    const isDashboard = pathname === "/"
 
     useEffect(() => {
         const t0 = setTimeout(() => setMounted(true), 0)
@@ -45,7 +44,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
                                     <SidebarTrigger />
                                 </div>
                             </header>
-                            <div className={`flex-1 bg-transparent ${isDashboard ? 'overflow-hidden pb-4' : 'overflow-auto pb-16'}`}>
+                            <div className="flex-1 bg-transparent overflow-auto pb-16">
                                 {children}
                             </div>
                         </main>

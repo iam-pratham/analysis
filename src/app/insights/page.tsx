@@ -123,7 +123,7 @@ export default function ReportsPage() {
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                    Reports
+                    2025 - Chiro / PT / OT - Reports
                 </h1>
             </div>
 
@@ -145,6 +145,9 @@ export default function ReportsPage() {
                                 <div className="text-2xl font-bold">
                                     {sm.value}
                                 </div>
+                                <div className="text-xs text-muted-foreground/70 mt-1">
+                                    {((sm.value / filteredClaims.length) * 100 || 0).toFixed(1)}%
+                                </div>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -159,7 +162,7 @@ export default function ReportsPage() {
                     </CardHeader>
                     <CardContent className="pb-4">
                         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                            <BarChart accessibilityLayer data={statusMetrics} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                            <BarChart accessibilityLayer data={statusMetrics} margin={{ top: 30, right: 30, left: 0, bottom: 5 }}>
                                 <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
                                 <XAxis
                                     dataKey="name"
@@ -177,7 +180,14 @@ export default function ReportsPage() {
                                             fill={entry.fill}
                                         />
                                     ))}
-                                    <LabelList dataKey="value" position="top" offset={10} className="fill-foreground/80 font-bold" fontSize={11} />
+                                    <LabelList
+                                        dataKey="value"
+                                        position="top"
+                                        offset={10}
+                                        className="fill-foreground/80 font-bold"
+                                        fontSize={11}
+                                        formatter={(val: number) => `${val.toLocaleString()} (${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                    />
                                 </Bar>
                             </BarChart>
                         </ChartContainer>
