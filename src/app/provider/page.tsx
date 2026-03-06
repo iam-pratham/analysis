@@ -60,7 +60,15 @@ export default function ProviderPage() {
             // Align with Reports and Dashboard logic
             if (isPaid) tPaidClaims++
             if (c.denialIndicator || statusStr.includes('denied') || statusStr.includes('deni') || combinedStatus.includes('denied')) tDenied++
-            if (!isNoOon && (c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || statusStr.includes('arbitration') || statusStr.includes('lop'))) {
+            // Align ARB count exactly with Dashboard logic
+            const isPaidStatus = statusStr.includes("paid correctly") || statusStr.includes("paid with 50%") || statusStr.includes("paid with patient")
+            const isDeductible = statusStr.includes("towards dedcutible") || statusStr.includes("towards deductible") || statusStr.includes("self pay")
+            const isInProcess = statusStr.includes("in process") || statusStr.includes("pending")
+            const isMaxLimit = statusStr.includes("not covered under patient") || statusStr.includes("reached maximum limit") || statusStr.includes("efforts exhausted")
+            const isNoOonOrExhausted = statusStr.includes("no oon") || statusStr.includes("benefit exhausted")
+            const isLop = String(c.insuranceType || "").toUpperCase() === "LOP" || statusStr === "lop" || statusStr.includes("/lop")
+            const isArb = c.arbFlag || statusStr.includes("under arbitration") || statusStr.includes("arbitration")
+            if (!isPaidStatus && !isDeductible && !isInProcess && !isMaxLimit && !isNoOonOrExhausted && (isLop || isArb)) {
                 tArb++
             }
             if (statusStr.includes('no oon') || statusStr.includes('benefit exhausted')) tNoOon++
