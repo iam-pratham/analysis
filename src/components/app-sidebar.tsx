@@ -45,7 +45,7 @@ export function AppSidebar() {
             <SidebarHeader className="p-7 pb-4">
                 <Link href="/" className="flex flex-col group transition-opacity hover:opacity-80">
                     <h2 className="text-base font-bold tracking-tight text-foreground leading-none">
-                        SHMB Analytics
+                        SHMB Analysis Tool
                     </h2>
                     <span className="text-[11px] text-muted-foreground/60 mt-1">
                         Precision Billing
@@ -102,21 +102,9 @@ export function AppSidebar() {
                 </SidebarGroup>
             </SidebarContent>
 
-            <div className="mt-auto p-6 border-t border-border/10">
-                <div className="flex flex-col gap-1.5 px-1 group cursor-default">
-                    <span className="text-[8px] uppercase font-bold tracking-[0.3em] text-muted-foreground/30 group-hover:text-muted-foreground/50 transition-colors">
-                        Authorized Access Only
-                    </span>
-                    <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-medium text-muted-foreground/50 group-hover:text-muted-foreground/70 transition-colors tracking-wide">
-                            © 2025 SHMB
-                        </span>
-                        <span className="text-[11px] font-medium text-muted-foreground/20">•</span>
-                        <span className="text-[11px] font-medium text-muted-foreground/50 group-hover:text-muted-foreground/70 transition-colors tracking-wide">
-                            All Rights Reserved
-                        </span>
-                    </div>
-                </div>
+            <div className="mt-auto mx-4 mb-4 pt-4 border-t border-border/20 flex flex-col gap-0.5">
+                <span className="text-[11px] font-semibold text-foreground/60 tracking-tight">SHMB Analysis Tool</span>
+                <span className="text-[10px] text-muted-foreground/30 tracking-wide">© 2025 · All rights reserved</span>
             </div>
         </Sidebar>
     )
