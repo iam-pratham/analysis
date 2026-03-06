@@ -184,13 +184,13 @@ export default function DashboardPage() {
           <Card className="flex flex-col h-full">
             <CardHeader>
               <CardTitle>Monthly Claims Volume</CardTitle>
-              <CardDescription>Number of claims processed per month based on Date of Service</CardDescription>
             </CardHeader>
             <CardContent className="flex-1 pb-6">
               <div className="flex flex-col lg:grid lg:grid-cols-12 gap-8 min-h-[500px] mt-4">
                 {/* Main Timeline Chart */}
                 <div className="lg:col-span-8 flex flex-col h-full bg-muted/20 rounded-2xl p-6 border border-border/50">
                   <div className="mb-8">
+                    <p className="text-sm text-muted-foreground italic">Monthly distribution of processed claims</p>
                   </div>
 
                   <div className="flex-1 w-full min-h-[350px]">
