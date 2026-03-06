@@ -104,7 +104,7 @@ export function AppSidebar() {
 
             <div className="mt-auto mx-4 mb-4 pt-4 border-t border-border/20 flex flex-col gap-0.5">
                 <span className="text-[11px] font-semibold text-foreground/60 tracking-tight">SHMB Analysis Tool</span>
-                <span className="text-[10px] text-muted-foreground/30 tracking-wide">© 2025 · All rights reserved</span>
+                <span className="text-[10px] text-muted-foreground/30 tracking-wide">© 2026 · All rights reserved</span>
             </div>
         </Sidebar>
     )
