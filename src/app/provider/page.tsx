@@ -127,10 +127,10 @@ export default function ProviderPage() {
                         </CardHeader>
                         <CardContent className="flex-1 pb-4">
                             <ChartContainer config={volumeConfig} className="min-h-[400px] w-full">
-                                <BarChart accessibilityLayer data={providerData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 120, left: 10, bottom: 5 }}>
+                                <BarChart accessibilityLayer data={providerData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 80, left: 0, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.2} />
                                     <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
-                                    <YAxis type="category" dataKey="name" width={180} tickLine={false} axisLine={false} style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }} />
+                                    <YAxis type="category" dataKey="name" width={140} tickLine={false} axisLine={false} style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }} />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent indicator="line" />} />
                                     <Bar dataKey="claims" radius={[0, 4, 4, 0]} maxBarSize={40}>
                                         {providerData.slice(0, 10).map((entry, index) => (
@@ -155,18 +155,7 @@ export default function ProviderPage() {
                 </motion.div>
 
                 <div className="flex flex-col gap-4 h-full">
-                    <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 flex-1">
-                        <Card className="flex flex-col justify-center h-full">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Total Billed Amount</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-3xl font-bold text-foreground">
-                                    ${totalBilled.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">Aggregated billed charges</p>
-                            </CardContent>
-                        </Card>
+                    <motion.div variants={itemVariants} className="grid grid-cols-1 gap-4 flex-1">
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Total Paid Amount</CardTitle>

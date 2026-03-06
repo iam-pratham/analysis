@@ -90,11 +90,11 @@ export default function ReportsPage() {
         });
 
         const allMetrics = [
-            { name: "Deductible / Self Pay", value: deductibleSelfPay, fill: "#6366f1" },
-            { name: "In Process", value: inProcess, fill: "#f59e0b" },
-            { name: "ARB / LOP / No OON / Benefit Exhausted", value: arbLopNoOon, fill: "#f97316" },
-            { name: "Max Limit / Not Covered", value: maxLimit, fill: "#ef4444" },
-            { name: "Paid Claims", value: paid, fill: "#22c55e" },
+            { name: "Deductible / Self Pay", value: deductibleSelfPay, fill: "var(--color-chart-1)" },
+            { name: "In Process", value: inProcess, fill: "var(--color-chart-2)" },
+            { name: "ARB / LOP / No OON / Benefit Exhausted", value: arbLopNoOon, fill: "var(--color-chart-4)" },
+            { name: "Max Limit / Not Covered", value: maxLimit, fill: "var(--color-chart-6)" },
+            { name: "Paid Claims", value: paid, fill: "var(--color-chart-5)" },
         ];
 
         return { metrics: allMetrics, chartData: allMetrics };
@@ -150,30 +150,43 @@ export default function ReportsPage() {
                         <CardDescription>Breakdown of claims into key analytic status buckets</CardDescription>
                     </CardHeader>
                     <CardContent className="pb-4">
-                        <ChartContainer config={chartConfig} className="min-h-[320px] w-full">
-                            <BarChart accessibilityLayer data={chartData} layout="vertical" margin={{ top: 5, right: 140, left: 10, bottom: 5 }}>
-                                <CartesianGrid horizontal={true} vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
-                                <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)", fontSize: "12px" }} />
-                                <YAxis
-                                    type="category"
+                        <ChartContainer config={chartConfig} className="min-h-[340px] w-full">
+                            <BarChart
+                                accessibilityLayer
+                                data={chartData}
+                                margin={{ top: 30, right: 20, left: 10, bottom: 60 }}
+                            >
+                                <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
+                                <XAxis
                                     dataKey="name"
-                                    width={240}
                                     tickLine={false}
                                     axisLine={false}
-                                    style={{ fontSize: "12px", fill: "var(--color-muted-foreground)" }}
+                                    interval={0}
+                                    height={80}
+                                    tick={(props: any) => {
+                                        const { x, y, payload } = props;
+                                        const parts = (payload.value as string).split(" / ");
+                                        const mid = Math.ceil(parts.length / 2);
+                                        const line1 = parts.slice(0, mid).join(" / ");
+                                        const line2 = parts.slice(mid).join(" / ");
+                                        return (
+                                            <g transform={`translate(${x},${y})`}>
+                                                <text x={0} y={0} dy={14} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize={11} fontWeight={500}>{line1}</text>
+                                                {line2 && <text x={0} y={0} dy={30} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize={11} fontWeight={500}>{line2}</text>}
+                                            </g>
+                                        );
+                                    }}
                                 />
+                                <YAxis tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)", fontSize: "12px" }} />
                                 <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
-                                <Bar dataKey="value" radius={[0, 4, 4, 0]} maxBarSize={48}>
+                                <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={80}>
                                     {chartData.map((entry: any, index: number) => (
-                                        <Cell
-                                            key={`cell-${index}`}
-                                            fill={entry.fill}
-                                        />
+                                        <Cell key={`cell-${index}`} fill={entry.fill} />
                                     ))}
                                     <LabelList
                                         dataKey="value"
-                                        position="right"
-                                        offset={12}
+                                        position="top"
+                                        offset={10}
                                         className="fill-foreground/80 font-bold"
                                         fontSize={12}
                                         formatter={(val: number) => `${val.toLocaleString()} (${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}

@@ -4,7 +4,7 @@ import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlobalFilters } from "@/components/global-filters"
-import { PieChart, Pie, RadialBarChart, RadialBar, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, LabelList, PolarAngleAxis } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell, LabelList } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
 import { motion } from "framer-motion"
 
@@ -94,66 +94,48 @@ export default function InsuranceAnalysisPage() {
                 <motion.div variants={itemVariants}>
                     <Card className="flex flex-col">
                         <CardHeader>
-                            <CardTitle>Insurance Category Mix</CardTitle>
-                            <CardDescription>Distribution by insurance category</CardDescription>
-                        </CardHeader>
-                        <CardContent className="pb-6 flex flex-col items-center">
-                            <div className="relative w-full aspect-square max-h-[420px] mt-4">
-                                <ChartContainer config={chartConfig} className="w-full h-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <PieChart>
-                                            <Pie
-                                                data={categoryStats}
-                                                dataKey="total"
-                                                nameKey="category"
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius="52%"
-                                                outerRadius="72%"
-                                                paddingAngle={3}
-                                                strokeWidth={2}
-                                                stroke="var(--background)"
-                                                label={({ cx, cy, midAngle, outerRadius, category, total, percent }) => {
-                                                    const RADIAN = Math.PI / 180;
-                                                    const radius = outerRadius + 36;
-                                                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                                                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                                                    const anchor = x > cx ? "start" : "end";
-                                                    return (
-                                                        <g>
-                                                            <text x={x} y={y - 9} textAnchor={anchor} fill="var(--foreground)" fontSize={11} fontWeight={700}>
-                                                                {category}
-                                                            </text>
-                                                            <text x={x} y={y + 6} textAnchor={anchor} fill="var(--muted-foreground)" fontSize={11} fontWeight={500}>
-                                                                {total.toLocaleString()} ({((percent ?? 0) * 100).toFixed(1)}%)
-                                                            </text>
-                                                        </g>
-                                                    );
-                                                }}
-                                                labelLine={{ stroke: "var(--border)", strokeWidth: 1 }}
-                                            >
-                                                {categoryStats.map((_, index) => (
-                                                    <Cell
-                                                        key={`cell-${index}`}
-                                                        fill={`var(--color-chart-${(index % 5) + 1})`}
-                                                        className="hover:opacity-80 transition-opacity cursor-pointer"
-                                                    />
-                                                ))}
-                                            </Pie>
-                                            <ChartTooltip
-                                                content={<ChartTooltipContent hideLabel />}
-                                            />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-
-                                {/* Center Aggregate Statistics */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-muted-foreground/30">Total Volume</span>
-                                    <span className="text-4xl font-black text-foreground">{filteredClaims.length.toLocaleString()}</span>
-                                    <span className="text-[10px] font-bold text-primary mt-1 uppercase tracking-widest">Insurance Mix</span>
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle>Insurance Category Mix</CardTitle>
+                                    <CardDescription>Distribution by insurance category</CardDescription>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-2xl font-black">{filteredClaims.length.toLocaleString()}</p>
+                                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Total Claims</p>
                                 </div>
                             </div>
+                        </CardHeader>
+                        <CardContent className="pb-4">
+                            <ChartContainer config={barConfig} className="h-[350px] w-full">
+                                <BarChart data={categoryStats} margin={{ top: 30, right: 20, left: 0, bottom: 5 }}>
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
+                                    <XAxis
+                                        dataKey="category"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickMargin={10}
+                                        style={{ fill: "var(--color-muted-foreground)", fontSize: "12px", fontWeight: 600 }}
+                                    />
+                                    <YAxis tickLine={false} axisLine={false} tickMargin={8} style={{ fill: "var(--color-muted-foreground)", fontSize: "11px" }} />
+                                    <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
+                                    <Bar dataKey="total" radius={[6, 6, 0, 0]} maxBarSize={72}>
+                                        {categoryStats.map((_, index) => (
+                                            <Cell
+                                                key={`cell-${index}`}
+                                                fill={`var(--color-chart-${(index % 5) + 1})`}
+                                            />
+                                        ))}
+                                        <LabelList
+                                            dataKey="total"
+                                            position="top"
+                                            offset={10}
+                                            className="fill-foreground/80 font-bold"
+                                            fontSize={12}
+                                            formatter={(val: number) => `${val.toLocaleString()} (${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                        />
+                                    </Bar>
+                                </BarChart>
+                            </ChartContainer>
                         </CardContent>
                     </Card>
                 </motion.div>

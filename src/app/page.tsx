@@ -272,7 +272,7 @@ export default function DashboardPage() {
                   <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                     <div>
                       <p className="text-xs font-semibold text-primary uppercase tracking-wider">Average Monthly Vol.</p>
-                      <p className="text-2xl font-bold">{stats.avg.toFixed(1)}</p>
+                      <p className="text-2xl font-bold">{Math.ceil(stats.avg).toLocaleString()}</p>
                     </div>
                   </div>
 

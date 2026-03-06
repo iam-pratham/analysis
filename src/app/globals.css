@@ -68,16 +68,20 @@
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.708 0 0);
-    --chart-1: oklch(0.55 0.20 270);
-    /* Indigo */
-    --chart-2: oklch(0.60 0.18 20);
-    /* Rose/Red */
-    --chart-3: oklch(0.65 0.18 60);
-    /* Amber/Orange */
-    --chart-4: oklch(0.58 0.16 160);
-    /* Emerald */
-    --chart-5: oklch(0.62 0.18 310);
-    /* Fuchsia */
+    --chart-1: #8ecae6;
+    /* sky-blue-light */
+    --chart-2: #219ebc;
+    /* blue-green */
+    --chart-3: #023047;
+    /* deep-space-blue */
+    --chart-4: #ffb703;
+    /* amber-flame */
+    --chart-5: #fb8500;
+    /* princeton-orange */
+    --chart-6: #219ebc;
+    /* blue-green */
+    --chart-7: #ffb703;
+    /* amber-flame */
     --sidebar: oklch(0.985 0 0);
     --sidebar-foreground: oklch(0.145 0 0);
     --sidebar-primary: oklch(0.205 0 0);
@@ -99,6 +103,8 @@
     --color-chart-3: var(--chart-3);
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
+    --color-chart-6: var(--chart-6);
+    --color-chart-7: var(--chart-7);
     --color-border: var(--border);
   }
 
@@ -121,16 +127,20 @@
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.556 0 0);
-    --chart-1: oklch(0.65 0.20 270);
-    /* Vibrant Indigo */
-    --chart-2: oklch(0.65 0.20 20);
-    /* Vibrant Rose */
-    --chart-3: oklch(0.75 0.18 60);
-    /* Vibrant Amber */
-    --chart-4: oklch(0.68 0.18 160);
-    /* Vibrant Emerald */
-    --chart-5: oklch(0.72 0.20 310);
-    /* Vibrant Fuchsia */
+    --chart-1: #8ecae6;
+    /* sky-blue-light */
+    --chart-2: #219ebc;
+    /* blue-green */
+    --chart-3: #023047;
+    /* deep-space-blue */
+    --chart-4: #ffb703;
+    /* amber-flame */
+    --chart-5: #fb8500;
+    /* princeton-orange */
+    --chart-6: #219ebc;
+    /* blue-green */
+    --chart-7: #ffb703;
+    /* amber-flame */
     --sidebar: oklch(0.205 0 0);
     --sidebar-foreground: oklch(0.985 0 0);
     --sidebar-primary: oklch(0.488 0.243 264.376);
@@ -152,6 +162,8 @@
     --color-chart-3: var(--chart-3);
     --color-chart-4: var(--chart-4);
     --color-chart-5: var(--chart-5);
+    --color-chart-6: var(--chart-6);
+    --color-chart-7: var(--chart-7);
     --color-border: var(--border);
   }
 }
