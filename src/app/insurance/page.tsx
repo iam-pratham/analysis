@@ -4,7 +4,7 @@ import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { GlobalFilters } from "@/components/global-filters"
-import { RadialBarChart, RadialBar, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, LabelList, PolarAngleAxis } from "recharts"
+import { PieChart, Pie, RadialBarChart, RadialBar, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Cell, LabelList, PolarAngleAxis } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
 import { motion } from "framer-motion"
 
@@ -97,56 +97,61 @@ export default function InsuranceAnalysisPage() {
                             <CardTitle>Insurance Category Mix</CardTitle>
                             <CardDescription>Distribution by insurance category</CardDescription>
                         </CardHeader>
-                        <CardContent className="pb-6">
-                            <div className="space-y-6 mt-4">
-                                {categoryStats.map((s, idx) => {
-                                    const percentage = (s.total / filteredClaims.length) * 100;
-                                    const colorClass = `bg-[var(--color-chart-${(idx % 5) + 1})]`;
+                        <CardContent className="pb-6 flex flex-col items-center">
+                            <div className="relative w-full aspect-square max-h-[350px] mt-4">
+                                <ChartContainer config={chartConfig} className="w-full h-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <PieChart>
+                                            <Pie
+                                                data={categoryStats}
+                                                dataKey="total"
+                                                nameKey="category"
+                                                cx="50%"
+                                                cy="50%"
+                                                innerRadius="65%"
+                                                outerRadius="90%"
+                                                paddingAngle={5}
+                                                strokeWidth={2}
+                                                stroke="var(--background)"
+                                            >
+                                                {categoryStats.map((_, index) => (
+                                                    <Cell
+                                                        key={`cell-${index}`}
+                                                        fill={`var(--color-chart-${(index % 5) + 1})`}
+                                                        className="hover:opacity-80 transition-opacity cursor-pointer"
+                                                    />
+                                                ))}
+                                            </Pie>
+                                            <ChartTooltip
+                                                content={<ChartTooltipContent hideLabel />}
+                                            />
+                                        </PieChart>
+                                    </ResponsiveContainer>
+                                </ChartContainer>
 
-                                    return (
-                                        <div key={s.category} className="group">
-                                            <div className="flex items-end justify-between mb-2">
-                                                <div className="flex flex-col">
-                                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
-                                                        {s.category}
-                                                    </span>
-                                                    <span className="text-2xl font-black tracking-tight mt-0.5">
-                                                        {s.total.toLocaleString()}
-                                                    </span>
-                                                </div>
-                                                <div className="text-right">
-                                                    <span className="text-xs font-bold text-primary">
-                                                        {percentage.toFixed(1)}%
-                                                    </span>
-                                                    <span className="block text-[9px] font-medium text-muted-foreground/30 uppercase tracking-wider">
-                                                        of volume
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div className="relative h-1.5 w-full bg-foreground/[0.03] rounded-full overflow-hidden">
-                                                <motion.div
-                                                    initial={{ width: 0 }}
-                                                    animate={{ width: `${percentage}%` }}
-                                                    transition={{ duration: 1, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
-                                                    className={`absolute left-0 top-0 h-full rounded-full ${colorClass} opacity-80`}
-                                                />
-                                            </div>
-                                        </div>
-                                    );
-                                })}
+                                {/* Center Aggregate Statistics */}
+                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none scale-90">
+                                    <span className="text-[10px] uppercase font-bold tracking-[0.3em] text-muted-foreground/30">Total Volume</span>
+                                    <span className="text-4xl font-black text-foreground">{filteredClaims.length.toLocaleString()}</span>
+                                    <span className="text-[10px] font-bold text-primary mt-1 uppercase tracking-widest">Insurance Mix</span>
+                                </div>
                             </div>
 
-                            {/* Section Footer / Insight */}
-                            <div className="mt-8 pt-6 border-t border-border/10">
-                                <div className="flex items-center justify-between px-1">
-                                    <span className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-widest">
-                                        Primary Revenue Driver
-                                    </span>
-                                    <span className="text-[11px] font-bold text-foreground">
-                                        {categoryStats[0]?.category}
-                                    </span>
-                                </div>
+                            <div className="mt-8 w-full grid grid-cols-2 gap-4">
+                                {categoryStats.map((s, idx) => (
+                                    <div key={s.category} className="flex flex-col p-3 rounded-xl bg-muted/20 border border-border/40 group hover:border-primary/20 transition-all">
+                                        <div className="flex items-center gap-2 mb-1.5">
+                                            <div className={`w-1.5 h-1.5 rounded-full bg-[var(--color-chart-${(idx % 5) + 1})]`} />
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">{s.category}</span>
+                                        </div>
+                                        <div className="flex items-baseline justify-between">
+                                            <span className="text-lg font-bold tracking-tight">{s.total.toLocaleString()}</span>
+                                            <span className="text-[10px] font-bold text-primary">
+                                                {((s.total / filteredClaims.length) * 100).toFixed(1)}%
+                                            </span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
                         </CardContent>
                     </Card>
