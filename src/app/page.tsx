@@ -45,7 +45,9 @@ export default function DashboardPage() {
 
   // Calculate KPIs
   const totalClaims = filteredClaims.length
-  const arbCount = filteredClaims.filter((c) => c.arbFlag).length
+  const arbCount = filteredClaims.filter((c) =>
+    c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP"
+  ).length
   const paidCount = filteredClaims.filter((c) =>
     String(c.paymentStatus).toLowerCase().includes("paid") ||
     String(c.claimStatus).toLowerCase().includes("paid")
@@ -164,7 +166,7 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">ARB Volume</CardTitle>
+              <CardTitle className="text-sm font-medium">ARB / LOP Volume</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold text-orange-600">{arbCount.toLocaleString()}</div>
