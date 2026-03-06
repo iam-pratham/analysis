@@ -24,6 +24,7 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion, AnimatePresence } from "framer-motion"
+import { useData } from "@/context/data-context"
 
 const items = [
     { title: "Upload Data", url: "/upload", icon: UploadCloud },
@@ -37,6 +38,7 @@ const items = [
 
 export function AppSidebar() {
     const pathname = usePathname()
+    const { claims } = useData()
 
     return (
         <Sidebar className="border-r border-border/40 bg-background/50 backdrop-blur-md">
@@ -57,29 +59,40 @@ export function AppSidebar() {
                         <SidebarMenu className="gap-0.5">
                             {items.map((item) => {
                                 const isActive = pathname === item.url
+                                const isDisabled = item.url !== "/upload" && claims.length === 0
+
                                 return (
                                     <SidebarMenuItem key={item.title}>
                                         <SidebarMenuButton
-                                            asChild
+                                            asChild={!isDisabled}
                                             isActive={isActive}
+                                            disabled={isDisabled}
                                             className={`
                                                 relative h-10 px-4 rounded-md transition-all duration-200 group
                                                 ${isActive
                                                     ? "bg-foreground/[0.04] text-foreground font-medium"
-                                                    : "hover:bg-foreground/[0.03] text-muted-foreground hover:text-foreground"
+                                                    : isDisabled
+                                                        ? "opacity-30 cursor-not-allowed grayscale pointer-events-none"
+                                                        : "hover:bg-foreground/[0.03] text-muted-foreground hover:text-foreground"
                                                 }
                                             `}
                                         >
-                                            <Link href={item.url} className="flex items-center w-full px-2">
-                                                <span className="text-[14px] font-bold tracking-tight">{item.title}</span>
-                                                {isActive && (
-                                                    <motion.div
-                                                        layoutId="nav-pill"
-                                                        className="absolute left-0 w-[2px] h-5 bg-primary rounded-full"
-                                                        transition={{ type: "spring", stiffness: 400, damping: 40 }}
-                                                    />
-                                                )}
-                                            </Link>
+                                            {isDisabled ? (
+                                                <div className="flex items-center w-full px-2 cursor-not-allowed">
+                                                    <span className="text-[14px] font-bold tracking-tight text-muted-foreground/50">{item.title}</span>
+                                                </div>
+                                            ) : (
+                                                <Link href={item.url} className="flex items-center w-full px-2">
+                                                    <span className="text-[14px] font-bold tracking-tight">{item.title}</span>
+                                                    {isActive && (
+                                                        <motion.div
+                                                            layoutId="nav-pill"
+                                                            className="absolute left-0 w-[2px] h-5 bg-primary rounded-full"
+                                                            transition={{ type: "spring", stiffness: 400, damping: 40 }}
+                                                        />
+                                                    )}
+                                                </Link>
+                                            )}
                                         </SidebarMenuButton>
                                     </SidebarMenuItem>
                                 )
