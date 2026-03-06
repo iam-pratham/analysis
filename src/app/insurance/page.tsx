@@ -97,55 +97,56 @@ export default function InsuranceAnalysisPage() {
                             <CardTitle>Insurance Category Mix</CardTitle>
                             <CardDescription>Distribution by insurance category</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-1 pb-4 flex flex-col items-center">
-                            <div className="relative w-full aspect-square max-h-[350px]">
-                                <ChartContainer config={chartConfig} className="w-full h-full">
-                                    <ResponsiveContainer width="100%" height="100%">
-                                        <RadialBarChart
-                                            innerRadius="20%"
-                                            outerRadius="100%"
-                                            data={treemapData}
-                                            startAngle={90}
-                                            endAngle={450}
+                        <CardContent className="flex-1 pb-4">
+                            <ChartContainer config={chartConfig} className="mx-auto w-full h-[350px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={categoryStats}
+                                        margin={{ top: 30, right: 10, left: 10, bottom: 20 }}
+                                    >
+                                        <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
+                                        <XAxis
+                                            dataKey="category"
+                                            axisLine={false}
+                                            tickLine={false}
+                                            tick={{ fill: 'var(--color-muted-foreground)', fontSize: 11, fontWeight: 'bold' }}
+                                        />
+                                        <YAxis hide />
+                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                                        <Bar
+                                            dataKey="total"
+                                            radius={[6, 6, 0, 0]}
+                                            maxBarSize={60}
                                         >
-                                            <PolarAngleAxis
-                                                type="number"
-                                                domain={[0, filteredClaims.length]}
-                                                angleAxisId={0}
-                                                tick={false}
-                                            />
-                                            <RadialBar
-                                                background
-                                                dataKey="value"
-                                                cornerRadius={10}
-                                                label={{
-                                                    fill: 'var(--color-foreground)',
-                                                    position: 'insideStart',
-                                                    fontSize: 10,
-                                                    fontWeight: 'bold',
-                                                    formatter: (v: any) => `${v}`
+                                            {categoryStats.map((_, i) => (
+                                                <Cell key={i} fill={`var(--color-chart-${(i % 5) + 1})`} />
+                                            ))}
+                                            <LabelList
+                                                dataKey="total"
+                                                position="top"
+                                                offset={10}
+                                                className="fill-foreground font-bold"
+                                                fontSize={12}
+                                                formatter={(val: number) => {
+                                                    const pct = ((val / filteredClaims.length) * 100).toFixed(1);
+                                                    return `${val.toLocaleString()} (${pct}%)`;
                                                 }}
                                             />
-                                            <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                        </RadialBarChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
+                                        </Bar>
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
 
-                                {/* Center Statistics */}
-                                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                                    <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-muted-foreground/50">Total Claims</span>
-                                    <span className="text-3xl font-extrabold">{filteredClaims.length}</span>
-                                </div>
-                            </div>
-
-                            <div className="mt-8 w-full grid grid-cols-2 gap-3">
-                                {treemapData.map((d) => (
-                                    <div key={d.name} className="flex flex-col p-3 rounded-xl bg-muted/20 border border-border/40">
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">{d.name}</span>
-                                            <span className="text-[10px] font-bold text-primary">{((d.value / filteredClaims.length) * 100).toFixed(1)}%</span>
+                            <div className="mt-8 grid grid-cols-2 lg:grid-cols-3 gap-3">
+                                {categoryStats.map((s, idx) => (
+                                    <div key={s.category} className="flex flex-col p-3 rounded-xl bg-muted/20 border border-border/40">
+                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1 truncate">{s.category}</span>
+                                        <div className="flex items-baseline gap-2">
+                                            <span className="text-lg font-bold">{s.total.toLocaleString()}</span>
+                                            <span className="text-[10px] font-bold text-primary">
+                                                {((s.total / filteredClaims.length) * 100).toFixed(1)}%
+                                            </span>
                                         </div>
-                                        <span className="text-lg font-bold">{d.value.toLocaleString()}</span>
                                     </div>
                                 ))}
                             </div>
