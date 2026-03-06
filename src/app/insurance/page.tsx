@@ -128,18 +128,24 @@ export default function InsuranceAnalysisPage() {
                                         <LabelList
                                             dataKey="total"
                                             position="top"
-                                            offset={26}
-                                            style={{ fill: "#dc2626", fontWeight: 700 }}
-                                            fontSize={13}
-                                            formatter={(val: number) => val.toLocaleString()}
-                                        />
-                                        <LabelList
-                                            dataKey="total"
-                                            position="top"
-                                            offset={11}
-                                            style={{ fill: "var(--color-muted-foreground)", fontWeight: 500 }}
-                                            fontSize={11}
-                                            formatter={(val: number) => `(${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                            content={(props: any) => {
+                                                const { x, y, width, value } = props;
+                                                if (value == null) return null;
+                                                const pct = ((value / filteredClaims.length) * 100 || 0).toFixed(1);
+                                                // Place the text centered above the bar
+                                                const cx = (x as number) + (width as number) / 2;
+                                                const cy = (y as number) - 10;
+                                                return (
+                                                    <g>
+                                                        <text x={cx} y={cy - 12} textAnchor="middle" fontSize={13}>
+                                                            <tspan fill="#dc2626" fontWeight={700}>{(value as number).toLocaleString()}</tspan>
+                                                        </text>
+                                                        <text x={cx} y={cy + 2} textAnchor="middle" fontSize={11}>
+                                                            <tspan fill="var(--color-muted-foreground)" fontWeight={500}>{`(${pct}%)`}</tspan>
+                                                        </text>
+                                                    </g>
+                                                );
+                                            }}
                                         />
                                     </Bar>
                                 </BarChart>
@@ -196,10 +202,10 @@ export default function InsuranceAnalysisPage() {
                                                 const rx = (x as number) + (width as number) + 10;
                                                 const ry = (y as number) + (height as number) / 2 + 4;
                                                 return (
-                                                    <g>
-                                                        <text x={rx} y={ry} fill="#dc2626" fontSize={11} fontWeight={700}>{(value as number).toLocaleString()}</text>
-                                                        <text x={rx + 38} y={ry} fill="var(--color-muted-foreground)" fontSize={11}>{`(${pct}%)`}</text>
-                                                    </g>
+                                                    <text x={rx} y={ry} fontSize={11}>
+                                                        <tspan fill="#dc2626" fontWeight={700}>{(value as number).toLocaleString()}</tspan>
+                                                        <tspan fill="var(--color-muted-foreground)" dx={8}>{`(${pct}%)`}</tspan>
+                                                    </text>
                                                 );
                                             }}
                                         />

@@ -150,11 +150,11 @@ export default function ReportsPage() {
                         <CardDescription>Breakdown of claims into key analytic status buckets</CardDescription>
                     </CardHeader>
                     <CardContent className="pb-4">
-                        <ChartContainer config={chartConfig} className="min-h-[340px] w-full">
+                        <ChartContainer config={chartConfig} className="min-h-[280px] w-full">
                             <BarChart
                                 accessibilityLayer
                                 data={chartData}
-                                margin={{ top: 30, right: 20, left: 10, bottom: 60 }}
+                                margin={{ top: 30, right: 20, left: 10, bottom: 0 }}
                             >
                                 <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
                                 <XAxis
@@ -162,7 +162,7 @@ export default function ReportsPage() {
                                     tickLine={false}
                                     axisLine={false}
                                     interval={0}
-                                    height={80}
+                                    height={50}
                                     tick={(props: any) => {
                                         const { x, y, payload } = props;
                                         const parts = (payload.value as string).split(" / ");
@@ -186,18 +186,24 @@ export default function ReportsPage() {
                                     <LabelList
                                         dataKey="value"
                                         position="top"
-                                        offset={26}
-                                        style={{ fill: "#dc2626", fontWeight: 700 }}
-                                        fontSize={13}
-                                        formatter={(val: number) => val.toLocaleString()}
-                                    />
-                                    <LabelList
-                                        dataKey="value"
-                                        position="top"
-                                        offset={11}
-                                        style={{ fill: "var(--color-muted-foreground)", fontWeight: 500 }}
-                                        fontSize={11}
-                                        formatter={(val: number) => `(${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                        content={(props: any) => {
+                                            const { x, y, width, value } = props;
+                                            if (value == null) return null;
+                                            const pct = ((value / filteredClaims.length) * 100 || 0).toFixed(1);
+                                            // Place the text centered above the bar
+                                            const cx = (x as number) + (width as number) / 2;
+                                            const cy = (y as number) - 10;
+                                            return (
+                                                <g>
+                                                    <text x={cx} y={cy - 12} textAnchor="middle" fontSize={13}>
+                                                        <tspan fill="#dc2626" fontWeight={700}>{(value as number).toLocaleString()}</tspan>
+                                                    </text>
+                                                    <text x={cx} y={cy + 2} textAnchor="middle" fontSize={11}>
+                                                        <tspan fill="var(--color-muted-foreground)" fontWeight={500}>{`(${pct}%)`}</tspan>
+                                                    </text>
+                                                </g>
+                                            );
+                                        }}
                                     />
                                 </Bar>
                             </BarChart>

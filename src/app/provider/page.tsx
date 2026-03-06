@@ -64,12 +64,21 @@ export default function ProviderPage() {
             const isPaidStatus = statusStr.includes("paid correctly") || statusStr.includes("paid with 50%") || statusStr.includes("paid with patient")
             const isDeductible = statusStr.includes("towards dedcutible") || statusStr.includes("towards deductible") || statusStr.includes("self pay")
             const isInProcess = statusStr.includes("in process") || statusStr.includes("pending")
-            const isMaxLimit = statusStr.includes("not covered under patient") || statusStr.includes("reached maximum limit") || statusStr.includes("efforts exhausted")
-            const isNoOonOrExhausted = statusStr.includes("no oon") || statusStr.includes("benefit exhausted")
-            const isLop = String(c.insuranceType || "").toUpperCase() === "LOP" || statusStr === "lop" || statusStr.includes("/lop")
-            const isArb = c.arbFlag || statusStr.includes("under arbitration") || statusStr.includes("arbitration")
-            if (!isPaidStatus && !isDeductible && !isInProcess && !isMaxLimit && !isNoOonOrExhausted && (isLop || isArb)) {
-                tArb++
+
+            if (!isPaidStatus && !isDeductible && !isInProcess) {
+                if (
+                    statusStr.includes("under arbitration") ||
+                    statusStr.includes("benefit exhausted") ||
+                    statusStr.includes("denied-no oon") ||
+                    statusStr.includes("denied - no oon") ||
+                    statusStr.includes("no oon") ||
+                    statusStr === "lop" ||
+                    statusStr.includes("/lop") ||
+                    String(c.insuranceType || "").toUpperCase() === "LOP" ||
+                    c.arbFlag
+                ) {
+                    tArb++
+                }
             }
             if (statusStr.includes('no oon') || statusStr.includes('benefit exhausted')) tNoOon++
 
@@ -156,10 +165,10 @@ export default function ProviderPage() {
                                                 const rx = (x as number) + (width as number) + 10;
                                                 const ry = (y as number) + (height as number) / 2 + 4;
                                                 return (
-                                                    <g>
-                                                        <text x={rx} y={ry} fill="#dc2626" fontSize={11} fontWeight={700}>{(value as number).toLocaleString()}</text>
-                                                        <text x={rx + 38} y={ry} fill="var(--color-muted-foreground)" fontSize={11}>{`(${pct}%)`}</text>
-                                                    </g>
+                                                    <text x={rx} y={ry} fontSize={11}>
+                                                        <tspan fill="#dc2626" fontWeight={700}>{(value as number).toLocaleString()}</tspan>
+                                                        <tspan fill="var(--color-muted-foreground)" dx={8}>{`(${pct}%)`}</tspan>
+                                                    </text>
                                                 );
                                             }}
                                         />
@@ -235,13 +244,13 @@ export default function ProviderPage() {
                         </Card>
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">ARB / LOP Volume</CardTitle>
+                                <CardTitle className="text-sm font-medium">ARB / LOP / No OON</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-orange-600">
                                     {totalArb}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Arbitration & LOP cases</p>
+                                <p className="text-xs text-muted-foreground mt-1">Arbitration, LOP & No OON cases</p>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -290,18 +299,24 @@ export default function ProviderPage() {
                                         <LabelList
                                             dataKey="usage"
                                             position="top"
-                                            offset={26}
-                                            style={{ fill: "#dc2626", fontWeight: 700 }}
-                                            fontSize={12}
-                                            formatter={(val: number) => val.toLocaleString()}
-                                        />
-                                        <LabelList
-                                            dataKey="usage"
-                                            position="top"
-                                            offset={11}
-                                            style={{ fill: "var(--color-muted-foreground)", fontWeight: 500 }}
-                                            fontSize={11}
-                                            formatter={(val: number) => `(${((val / totalCptUsages) * 100 || 0).toFixed(1)}%)`}
+                                            content={(props: any) => {
+                                                const { x, y, width, value } = props;
+                                                if (value == null) return null;
+                                                const pct = ((value / totalCptUsages) * 100 || 0).toFixed(1);
+                                                // Place the text centered above the bar
+                                                const cx = (x as number) + (width as number) / 2;
+                                                const cy = (y as number) - 10;
+                                                return (
+                                                    <g>
+                                                        <text x={cx} y={cy - 12} textAnchor="middle" fontSize={12}>
+                                                            <tspan fill="#dc2626" fontWeight={700}>{(value as number).toLocaleString()}</tspan>
+                                                        </text>
+                                                        <text x={cx} y={cy + 2} textAnchor="middle" fontSize={11}>
+                                                            <tspan fill="var(--color-muted-foreground)" fontWeight={500}>{`(${pct}%)`}</tspan>
+                                                        </text>
+                                                    </g>
+                                                );
+                                            }}
                                         />
                                     </Bar>
                                 </BarChart>

@@ -130,10 +130,10 @@ export default function CptAnalysisPage() {
                                                 const rx = (x as number) + (width as number) + 10;
                                                 const ry = (y as number) + (height as number) / 2 + 4;
                                                 return (
-                                                    <g>
-                                                        <text x={rx} y={ry} fill="#dc2626" fontSize={11} fontWeight={700}>{(value as number).toLocaleString()}</text>
-                                                        <text x={rx + 38} y={ry} fill="var(--color-muted-foreground)" fontSize={11}>{`(${pct}%)`}</text>
-                                                    </g>
+                                                    <text x={rx} y={ry} fontSize={11}>
+                                                        <tspan fill="#dc2626" fontWeight={700}>{(value as number).toLocaleString()}</tspan>
+                                                        <tspan fill="var(--color-muted-foreground)" dx={8}>{`(${pct}%)`}</tspan>
+                                                    </text>
                                                 );
                                             }}
                                         />

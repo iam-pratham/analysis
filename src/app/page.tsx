@@ -45,18 +45,25 @@ export default function DashboardPage() {
 
   // Calculate KPIs
   const totalClaims = filteredClaims.length
-  const arbCount = filteredClaims.filter((c) => {
+  const arbLopNoOonCount = filteredClaims.filter((c) => {
     const s = String(c.claimStatus || "").toLowerCase().trim()
     // Exclude claims whose status explicitly places them in another category
     if (s.includes("paid correctly") || s.includes("paid with 50%") || s.includes("paid with patient")) return false
     if (s.includes("towards dedcutible") || s.includes("towards deductible") || s.includes("self pay")) return false
     if (s.includes("in process") || s.includes("pending")) return false
-    if (s.includes("not covered under patient") || s.includes("reached maximum limit") || s.includes("efforts exhausted")) return false
-    if (s.includes("no oon") || s.includes("benefit exhausted")) return false
-    // Only count genuine ARB or LOP
-    const isLop = String(c.insuranceType || "").toUpperCase() === "LOP" || s === "lop" || s.includes("/lop")
-    const isArb = c.arbFlag || s.includes("under arbitration") || s.includes("arbitration")
-    return isLop || isArb
+
+    // ARB / LOP / No OON / Benefit Exhausted logic
+    return (
+      s.includes("under arbitration") ||
+      s.includes("benefit exhausted") ||
+      s.includes("denied-no oon") ||
+      s.includes("denied - no oon") ||
+      s.includes("no oon") ||
+      s === "lop" ||
+      s.includes("/lop") ||
+      String(c.insuranceType || "").toUpperCase() === "LOP" ||
+      c.arbFlag
+    )
   }).length
   const deductibleCount = filteredClaims.filter((c) => {
     const status = String(c.claimStatus || "").toLowerCase()
@@ -71,7 +78,7 @@ export default function DashboardPage() {
     const s = String(c.claimStatus || "").toLowerCase().trim()
     return s.includes("paid correctly") || s.includes("paid with 50%") || s.includes("paid with patient")
   }).length
-  const unpaidCount = totalClaims - paidCount - arbCount
+  const unpaidCount = totalClaims - paidCount - arbLopNoOonCount
 
   // Generate Monthly Claims Data (DOS)
   const monthMap: Record<string, number> = {}
@@ -185,11 +192,11 @@ export default function DashboardPage() {
         <motion.div variants={itemVariants}>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">ARB / LOP Volume</CardTitle>
+              <CardTitle className="text-sm font-medium">ARB / LOP / No OON</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-3xl font-bold text-orange-600">{arbCount.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{((arbCount / totalClaims) * 100 || 0).toFixed(1)}% of total</p>
+              <div className="text-3xl font-bold text-orange-600">{arbLopNoOonCount.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground mt-1">{((arbLopNoOonCount / totalClaims) * 100 || 0).toFixed(1)}% of total</p>
             </CardContent>
           </Card>
         </motion.div>
