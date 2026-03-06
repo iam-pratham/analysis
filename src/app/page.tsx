@@ -45,17 +45,12 @@ export default function DashboardPage() {
 
   // Calculate KPIs
   const totalClaims = filteredClaims.length
-  const arbCount = filteredClaims.filter((c) =>
-    c.arbFlag || (
-      (String(c.insuranceType).toUpperCase() === "LOP") &&
-      !String(c.claimStatus).toLowerCase().includes("no oon") &&
-      !String(c.claimStatus).toLowerCase().includes("benefit exhausted")
-    )
-  ).length
-  const noOonCount = filteredClaims.filter((c) =>
-    String(c.claimStatus).toLowerCase().includes("no oon") ||
-    String(c.claimStatus).toLowerCase().includes("benefit exhausted")
-  ).length
+  const arbCount = filteredClaims.filter((c) => {
+    const status = String(c.claimStatus || "").toLowerCase()
+    const isNoOon = status.includes("no oon") || status.includes("benefit exhausted")
+    if (isNoOon) return false
+    return c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("under arbitration") || status.includes("lop")
+  }).length
   const paidCount = filteredClaims.filter((c) =>
     String(c.paymentStatus).toLowerCase().includes("paid") ||
     String(c.claimStatus).toLowerCase().includes("paid")
@@ -133,7 +128,7 @@ export default function DashboardPage() {
         variants={containerVariants}
         initial="hidden"
         animate="show"
-        className="grid gap-6 md:grid-cols-2 lg:grid-cols-5"
+        className="grid gap-6 md:grid-cols-2 lg:grid-cols-4"
       >
         <motion.div variants={itemVariants}>
           <Card>
@@ -179,18 +174,6 @@ export default function DashboardPage() {
             <CardContent>
               <div className="text-3xl font-bold text-orange-600">{arbCount.toLocaleString()}</div>
               <p className="text-xs text-muted-foreground mt-1">{((arbCount / totalClaims) * 100 || 0).toFixed(1)}% of total volume</p>
-            </CardContent>
-          </Card>
-        </motion.div>
-
-        <motion.div variants={itemVariants}>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">NO OON Volume</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-3xl font-bold text-blue-600">{noOonCount.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">{((noOonCount / totalClaims) * 100 || 0).toFixed(1)}% of total volume</p>
             </CardContent>
           </Card>
         </motion.div>

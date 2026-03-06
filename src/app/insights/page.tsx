@@ -38,11 +38,11 @@ export default function ReportsPage() {
             const payStatus = String(c.paymentStatus || "").toLowerCase().trim();
             const fullText = (status + " " + payStatus).toLowerCase();
 
-            // Category classification
+            // 1. Primary classification (Categorical)
             if (status.includes("no oon") || status.includes("benefit exhausted")) {
                 noOon++;
             }
-            else if (status.includes("under arbitration") || status === "lop" || status.includes("/lop")) {
+            else if (c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("under arbitration") || status.includes("lop")) {
                 arbLop++;
             }
             else if (status.includes("towards dedcutible") || status.includes("towards deductible") || status.includes("self pay")) {
@@ -68,9 +68,6 @@ export default function ReportsPage() {
             }
             else if (fullText.includes("paid")) {
                 paid++;
-            }
-            else if (fullText.includes("arb") || fullText.includes("lop")) {
-                arbLop++;
             }
             else if (fullText.includes("pending")) {
                 pending++;

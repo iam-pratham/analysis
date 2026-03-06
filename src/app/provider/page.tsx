@@ -52,10 +52,15 @@ export default function ProviderPage() {
             tBilled += (c.billedAmt || 0)
             tPaid += (c.paidAmt || 0)
 
-            // Align with Reports logic: any status containing 'paid' is a paid claim
-            if (status.includes('paid')) tPaidClaims++
+            // Align with Reports and Dashboard logic
+            const statusLower = status.toLowerCase()
+            const isNoOon = statusLower.includes("no oon") || statusLower.includes("benefit exhausted")
+
+            if (statusLower.includes('paid')) tPaidClaims++
             if (c.denialIndicator) tDenied++
-            if (c.arbFlag || status.includes('arbitration')) tArb++
+            if (!isNoOon && (c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || statusLower.includes('arbitration') || statusLower.includes('lop'))) {
+                tArb++
+            }
             if (status.includes('no oon') || status.includes('benefit exhausted')) tNoOon++
 
             // Categorization based on pre-processed suffixes in data context
@@ -209,7 +214,7 @@ export default function ProviderPage() {
                         </Card>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+                    <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Paid Claims</CardTitle>
@@ -241,17 +246,6 @@ export default function ProviderPage() {
                                     {totalArb}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">Arbitration flagged</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="flex flex-col justify-center h-full">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">No OON</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-blue-600">
-                                    {totalNoOon}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">Benefit exhausted</p>
                             </CardContent>
                         </Card>
                     </motion.div>
