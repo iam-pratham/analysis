@@ -123,7 +123,7 @@ export default function ReportsPage() {
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <div className="flex items-center justify-between">
                 <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                    2025 - Chiro / PT / OT - Reports
+                    April thru december 2025 - Chiro / PT / OT - Reports
                 </h1>
             </div>
 
