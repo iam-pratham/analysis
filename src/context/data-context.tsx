@@ -79,9 +79,39 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 newIns = "Medicare";
             }
 
+            const rawDoc = c.doctorName ? c.doctorName.split(',')[0].trim() : "Unknown Doctor";
+            const nameLower = rawDoc.toLowerCase();
+            let docSuffix = "";
+
+            // Centralized Specialty Mapping
+            if (nameLower.includes('jay e brecker') || nameLower.includes('peter j berger') || nameLower.includes('marzili')) {
+                docSuffix = " - Chiro";
+            } else if (
+                nameLower.includes('bruce j buckman') ||
+                nameLower.includes('christian s gartner') ||
+                nameLower.includes('monreo castro') ||
+                nameLower.includes('sridhar yalamanchili') ||
+                nameLower.includes('marianne decastro') ||
+                nameLower.includes('andy koser') ||
+                nameLower.includes('sferra') ||
+                nameLower.includes('sferry')
+            ) {
+                docSuffix = " - PT";
+            } else if (nameLower.includes('madison lynn smith') || nameLower.includes('sclafani')) {
+                docSuffix = " - OT";
+            } else if (nameLower.includes('chiro')) {
+                docSuffix = " - Chiro";
+            } else if (nameLower.includes('physical therapy') || nameLower.includes('pt')) {
+                docSuffix = " - PT";
+            } else if (nameLower.includes('occupational therapy') || nameLower.includes('ot')) {
+                docSuffix = " - OT";
+            }
+
+            const cleanDoc = docSuffix ? `${rawDoc.replace(/\s+-\s+(Chiro|PT|OT|CHIRO)$/i, '')}${docSuffix}` : rawDoc;
+
             return {
                 ...c,
-                doctorName: c.doctorName ? c.doctorName.split(',')[0].trim() : "Unknown Doctor",
+                doctorName: cleanDoc,
                 providerName: c.providerName ? c.providerName.split(',')[0].trim() : "Unknown Provider",
                 insuranceType: newIns
             };

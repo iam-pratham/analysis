@@ -56,10 +56,10 @@ export default function ProviderPage() {
             if (c.denialIndicator) tDenied++
             if (c.arbFlag) tArb++
 
-            // Categorization based on provided doctor list
-            const isChiro = nameLower.includes('jay e brecker') || nameLower.includes('peter j berger') || nameLower.includes('chiro');
-            const isPT = nameLower.includes('bruce j buckman') || nameLower.includes('christian s gartner') || nameLower.includes('monreo castro') || nameLower.includes('sridhar yalamanchili') || nameLower.includes('marianne decastro') || nameLower.includes('andy koser') || nameLower.includes('pt') || nameLower.includes('physical therapy');
-            const isOT = nameLower.includes('madison lynn smith') || nameLower.includes('ot') || nameLower.includes('occupational therapy');
+            // Categorization based on pre-processed suffixes in data context
+            const isChiro = name.includes(' - Chiro');
+            const isPT = name.includes(' - PT');
+            const isOT = name.includes(' - OT');
 
             if (isChiro) tChiro++
             if (isPT) tPT++

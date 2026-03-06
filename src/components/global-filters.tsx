@@ -6,11 +6,11 @@ import { Button } from "./ui/button"
 import { FilterX } from "lucide-react"
 
 export function GlobalFilters() {
-    const { claims, filters, setFilters } = useData()
+    const { claims, filteredClaims, filters, setFilters } = useData()
 
     if (claims.length === 0) return null
 
-    const providers = Array.from(new Set(claims.map((c) => c.doctorName ? c.doctorName.split(',')[0].trim() : "Unknown Doctor"))).sort()
+    const providers = Array.from(new Set(filteredClaims.map((c: any) => c.doctorName as string))).sort()
     const insurances = Array.from(new Set(claims.map((c) => {
         let newIns = c.insuranceType || "Unknown Insurance";
         const low = newIns.toLowerCase();
