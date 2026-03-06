@@ -97,58 +97,56 @@ export default function InsuranceAnalysisPage() {
                             <CardTitle>Insurance Category Mix</CardTitle>
                             <CardDescription>Distribution by insurance category</CardDescription>
                         </CardHeader>
-                        <CardContent className="pb-4">
-                            <ChartContainer config={chartConfig} className="mx-auto w-full h-[280px]">
-                                <ResponsiveContainer width="100%" height="100%">
-                                    <BarChart
-                                        data={categoryStats}
-                                        margin={{ top: 30, right: 10, left: 10, bottom: 20 }}
-                                    >
-                                        <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
-                                        <XAxis
-                                            dataKey="category"
-                                            axisLine={false}
-                                            tickLine={false}
-                                            tick={{ fill: 'var(--color-muted-foreground)', fontSize: 11, fontWeight: 'bold' }}
-                                        />
-                                        <YAxis hide />
-                                        <ChartTooltip content={<ChartTooltipContent hideLabel />} />
-                                        <Bar
-                                            dataKey="total"
-                                            radius={[6, 6, 0, 0]}
-                                            maxBarSize={60}
-                                        >
-                                            {categoryStats.map((_, i) => (
-                                                <Cell key={i} fill={`var(--color-chart-${(i % 5) + 1})`} />
-                                            ))}
-                                            <LabelList
-                                                dataKey="total"
-                                                position="top"
-                                                offset={10}
-                                                className="fill-foreground font-bold"
-                                                fontSize={12}
-                                                formatter={(val: number) => {
-                                                    const pct = ((val / filteredClaims.length) * 100).toFixed(1);
-                                                    return `${val.toLocaleString()} (${pct}%)`;
-                                                }}
-                                            />
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            </ChartContainer>
+                        <CardContent className="pb-6">
+                            <div className="space-y-6 mt-4">
+                                {categoryStats.map((s, idx) => {
+                                    const percentage = (s.total / filteredClaims.length) * 100;
+                                    const colorClass = `bg-[var(--color-chart-${(idx % 5) + 1})]`;
 
-                            <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
-                                {categoryStats.map((s, idx) => (
-                                    <div key={s.category} className="flex flex-col p-3 rounded-xl bg-muted/20 border border-border/40">
-                                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1 truncate">{s.category}</span>
-                                        <div className="flex items-baseline gap-2">
-                                            <span className="text-lg font-bold">{s.total.toLocaleString()}</span>
-                                            <span className="text-[10px] font-bold text-primary">
-                                                {((s.total / filteredClaims.length) * 100).toFixed(1)}%
-                                            </span>
+                                    return (
+                                        <div key={s.category} className="group">
+                                            <div className="flex items-end justify-between mb-2">
+                                                <div className="flex flex-col">
+                                                    <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/40 group-hover:text-muted-foreground/60 transition-colors">
+                                                        {s.category}
+                                                    </span>
+                                                    <span className="text-2xl font-black tracking-tight mt-0.5">
+                                                        {s.total.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <span className="text-xs font-bold text-primary">
+                                                        {percentage.toFixed(1)}%
+                                                    </span>
+                                                    <span className="block text-[9px] font-medium text-muted-foreground/30 uppercase tracking-wider">
+                                                        of volume
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            <div className="relative h-1.5 w-full bg-foreground/[0.03] rounded-full overflow-hidden">
+                                                <motion.div
+                                                    initial={{ width: 0 }}
+                                                    animate={{ width: `${percentage}%` }}
+                                                    transition={{ duration: 1, delay: idx * 0.1, ease: [0.22, 1, 0.36, 1] }}
+                                                    className={`absolute left-0 top-0 h-full rounded-full ${colorClass} opacity-80`}
+                                                />
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    );
+                                })}
+                            </div>
+
+                            {/* Section Footer / Insight */}
+                            <div className="mt-8 pt-6 border-t border-border/10">
+                                <div className="flex items-center justify-between px-1">
+                                    <span className="text-[10px] font-medium text-muted-foreground/40 uppercase tracking-widest">
+                                        Primary Revenue Driver
+                                    </span>
+                                    <span className="text-[11px] font-bold text-foreground">
+                                        {categoryStats[0]?.category}
+                                    </span>
+                                </div>
                             </div>
                         </CardContent>
                     </Card>

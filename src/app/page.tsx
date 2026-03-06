@@ -259,8 +259,8 @@ export default function DashboardPage() {
 
                   {/* Top 5 list (no scroll) */}
                   <div className="flex-1 flex flex-col">
-                    <h4 className="text-sm font-bold mb-4 px-1 text-primary lowercase">
-                      top 5 high volume months
+                    <h4 className="text-sm font-bold mb-4 px-1 text-primary">
+                      Top 5 high volume months
                     </h4>
                     <div className="flex-col space-y-3">
                       {stats.topFive.map((d, i) => (
