@@ -128,10 +128,18 @@ export default function InsuranceAnalysisPage() {
                                         <LabelList
                                             dataKey="total"
                                             position="top"
-                                            offset={10}
-                                            className="fill-foreground/80 font-bold"
-                                            fontSize={12}
-                                            formatter={(val: number) => `${val.toLocaleString()} (${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                            offset={26}
+                                            style={{ fill: "#dc2626", fontWeight: 700 }}
+                                            fontSize={13}
+                                            formatter={(val: number) => val.toLocaleString()}
+                                        />
+                                        <LabelList
+                                            dataKey="total"
+                                            position="top"
+                                            offset={11}
+                                            style={{ fill: "var(--color-muted-foreground)", fontWeight: 500 }}
+                                            fontSize={11}
+                                            formatter={(val: number) => `(${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
                                         />
                                     </Bar>
                                 </BarChart>

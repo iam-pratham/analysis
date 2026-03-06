@@ -131,7 +131,6 @@ export default function ProviderPage() {
                     <Card className="flex flex-col h-full">
                         <CardHeader>
                             <CardTitle>Total Claims by Provider</CardTitle>
-                            <CardDescription>Top billing service providers</CardDescription>
                         </CardHeader>
                         <CardContent className="flex-1 pb-4">
                             <ChartContainer config={volumeConfig} className="min-h-[400px] w-full">
@@ -150,10 +149,19 @@ export default function ProviderPage() {
                                         <LabelList
                                             dataKey="claims"
                                             position="right"
-                                            offset={10}
-                                            className="fill-foreground/80 font-bold"
-                                            fontSize={11}
-                                            formatter={(val: number) => `${val.toLocaleString()} (${((val / filteredClaims.length) * 100 || 0).toFixed(1)}%)`}
+                                            content={(props: any) => {
+                                                const { x, y, width, height, value } = props;
+                                                if (value == null) return null;
+                                                const pct = ((value / filteredClaims.length) * 100 || 0).toFixed(1);
+                                                const rx = (x as number) + (width as number) + 10;
+                                                const ry = (y as number) + (height as number) / 2 + 4;
+                                                return (
+                                                    <g>
+                                                        <text x={rx} y={ry} fill="#dc2626" fontSize={11} fontWeight={700}>{(value as number).toLocaleString()}</text>
+                                                        <text x={rx + 38} y={ry} fill="var(--color-muted-foreground)" fontSize={11}>{`(${pct}%)`}</text>
+                                                    </g>
+                                                );
+                                            }}
                                         />
                                     </Bar>
                                 </BarChart>

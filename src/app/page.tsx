@@ -153,7 +153,7 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="text-3xl font-bold">{totalClaims.toLocaleString()}</div>
-              <p className="text-xs text-muted-foreground mt-1">Total volume matching filters</p>
+              <p className="text-xs text-muted-foreground mt-1">100% of total claims</p>
             </CardContent>
           </Card>
         </motion.div>
@@ -255,7 +255,7 @@ export default function DashboardPage() {
                               dataKey="value"
                               position="top"
                               offset={12}
-                              className="fill-foreground font-bold"
+                              style={{ fill: "#dc2626", fontWeight: 700 }}
                               fontSize={11}
                               formatter={(val: number) => val.toLocaleString()}
                             />
