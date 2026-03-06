@@ -91,14 +91,14 @@ export default function InsuranceAnalysisPage() {
                 animate="show"
                 className="grid gap-6 md:grid-cols-2"
             >
-                <motion.div variants={itemVariants} className="h-full">
-                    <Card className="flex flex-col h-full">
+                <motion.div variants={itemVariants}>
+                    <Card className="flex flex-col">
                         <CardHeader>
                             <CardTitle>Insurance Category Mix</CardTitle>
                             <CardDescription>Distribution by insurance category</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-1 pb-4">
-                            <ChartContainer config={chartConfig} className="mx-auto w-full h-[350px]">
+                        <CardContent className="pb-4">
+                            <ChartContainer config={chartConfig} className="mx-auto w-full h-[280px]">
                                 <ResponsiveContainer width="100%" height="100%">
                                     <BarChart
                                         data={categoryStats}
@@ -137,7 +137,7 @@ export default function InsuranceAnalysisPage() {
                                 </ResponsiveContainer>
                             </ChartContainer>
 
-                            <div className="mt-8 grid grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div className="mt-4 grid grid-cols-2 lg:grid-cols-3 gap-3">
                                 {categoryStats.map((s, idx) => (
                                     <div key={s.category} className="flex flex-col p-3 rounded-xl bg-muted/20 border border-border/40">
                                         <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60 mb-1 truncate">{s.category}</span>
@@ -154,14 +154,14 @@ export default function InsuranceAnalysisPage() {
                     </Card>
                 </motion.div>
 
-                <motion.div variants={itemVariants} className="h-full">
-                    <Card className="flex flex-col h-full">
+                <motion.div variants={itemVariants}>
+                    <Card className="flex flex-col">
                         <CardHeader>
                             <CardTitle>Claims by Insurance Company</CardTitle>
                             <CardDescription>Total volume of claims per payer</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-1 pb-4">
-                            <ChartContainer config={barConfig} className="min-h-[400px] w-full">
+                        <CardContent className="pb-4">
+                            <ChartContainer config={barConfig} className="h-[350px] w-full">
                                 <BarChart accessibilityLayer data={companyStats.slice(0, 10)} layout="vertical" margin={{ top: 20, right: 120, left: 10, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.2} />
                                     <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
