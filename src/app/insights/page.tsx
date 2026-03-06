@@ -27,7 +27,8 @@ export default function ReportsPage() {
     const statusMetrics = React.useMemo(() => {
         let deductible = 0;
         let pending = 0;
-        let noBenefits = 0;
+        let arbLop = 0;
+        let noOon = 0;
         let maxLimit = 0;
         let paid = 0;
         let denied = 0;
@@ -37,29 +38,19 @@ export default function ReportsPage() {
             const payStatus = String(c.paymentStatus || "").toLowerCase().trim();
             const fullText = (status + " " + payStatus).toLowerCase();
 
-            // Category classification (Mutually exclusive for main buckets)
-            // 1. No OON / LOP / ARB
-            if (
-                status.includes("benefit exhausted/secondary insurance/lop") ||
-                status.includes("denied-no oon with secondary/lop/pt's responsibility") ||
-                status.includes("under arbitration") ||
-                status === "lop"
-            ) {
-                noBenefits++;
+            // Category classification
+            if (status.includes("no oon") || status.includes("benefit exhausted")) {
+                noOon++;
             }
-            // 2. Deductible / Self Pay
-            else if (
-                status.includes("towards dedcutible") ||
-                status.includes("towards deductible") ||
-                status.includes("self pay")
-            ) {
+            else if (status.includes("under arbitration") || status === "lop" || status.includes("/lop")) {
+                arbLop++;
+            }
+            else if (status.includes("towards dedcutible") || status.includes("towards deductible") || status.includes("self pay")) {
                 deductible++;
             }
-            // 3. Pending
             else if (status.includes("in process")) {
                 pending++;
             }
-            // 4. Paid
             else if (
                 status.includes("paid correctly") ||
                 status.includes("paid with 50% pre-cert penalty") ||
@@ -68,7 +59,6 @@ export default function ReportsPage() {
             ) {
                 paid++;
             }
-            // 5. Max Limit / Not Covered
             else if (
                 status.includes("reached maximum limit") ||
                 status.includes("not covered under patient's plan") ||
@@ -76,12 +66,11 @@ export default function ReportsPage() {
             ) {
                 maxLimit++;
             }
-            // Fallbacks for older dummy data or generalized variants
             else if (fullText.includes("paid")) {
                 paid++;
             }
             else if (fullText.includes("arb") || fullText.includes("lop")) {
-                noBenefits++;
+                arbLop++;
             }
             else if (fullText.includes("pending")) {
                 pending++;
@@ -93,9 +82,6 @@ export default function ReportsPage() {
                 deductible++;
             }
 
-            // 6. Denied (Independent check)
-            // Any claim containing 'denied' or 'deni' should be counted in the Denied card,
-            // even if it was also classified under No OON.
             if (status.includes("denied") || status.includes("deni") || fullText.includes("denied") || fullText.includes("deni")) {
                 denied++;
             }
@@ -104,9 +90,10 @@ export default function ReportsPage() {
         return [
             { name: "Deductible / Self Pay", value: deductible, fill: "var(--color-chart-1)" },
             { name: "Pending", value: pending, fill: "var(--color-chart-2)" },
-            { name: "No OON / LOP / ARB", value: noBenefits, fill: "var(--color-chart-3)" },
-            { name: "Max Limit / Not Covered", value: maxLimit, fill: "var(--color-chart-4)" },
-            { name: "Paid Claims", value: paid, fill: "var(--color-chart-5)" },
+            { name: "ARB / LOP Volume", value: arbLop, fill: "var(--color-chart-3)" },
+            { name: "NO OON Volume", value: noOon, fill: "var(--color-chart-4)" },
+            { name: "Max Limit / Not Covered", value: maxLimit, fill: "var(--color-chart-5)" },
+            { name: "Paid Claims", value: paid, fill: "var(--color-chart-6)" },
             { name: "Denied", value: denied, fill: "var(--color-destructive)" }
         ]
     }, [filteredClaims])
@@ -133,7 +120,7 @@ export default function ReportsPage() {
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid gap-4 md:grid-cols-3 lg:grid-cols-6"
+                className="grid gap-4 md:grid-cols-3 lg:grid-cols-7"
             >
                 {statusMetrics.map((sm, i) => (
                     <motion.div variants={itemVariants} key={i}>

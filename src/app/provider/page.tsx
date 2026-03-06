@@ -31,7 +31,7 @@ const itemVariants = {
 export default function ProviderPage() {
     const { filteredClaims, claims } = useData()
 
-    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalDenied, totalArb, totalChiro, totalPT, totalOT } = useMemo(() => {
+    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalDenied, totalArb, totalNoOon, totalChiro, totalPT, totalOT } = useMemo(() => {
         const pMap: Record<string, number> = {}
         let tBilled = 0
         let tPaid = 0
@@ -41,6 +41,7 @@ export default function ProviderPage() {
         let tChiro = 0
         let tPT = 0
         let tOT = 0
+        let tNoOon = 0
 
         filteredClaims.forEach(c => {
             const status = String(c.claimStatus || (c as any).report || '').toLowerCase();
@@ -54,7 +55,8 @@ export default function ProviderPage() {
             // Align with Reports logic: any status containing 'paid' is a paid claim
             if (status.includes('paid')) tPaidClaims++
             if (c.denialIndicator) tDenied++
-            if (c.arbFlag) tArb++
+            if (c.arbFlag || status.includes('arbitration')) tArb++
+            if (status.includes('no oon') || status.includes('benefit exhausted')) tNoOon++
 
             // Categorization based on pre-processed suffixes in data context
             const isChiro = name.includes(' - Chiro');
@@ -72,6 +74,7 @@ export default function ProviderPage() {
             totalPaidClaims: tPaidClaims,
             totalDenied: tDenied,
             totalArb: tArb,
+            totalNoOon: tNoOon,
             totalChiro: tChiro,
             totalPT: tPT,
             totalOT: tOT
@@ -206,7 +209,7 @@ export default function ProviderPage() {
                         </Card>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
+                    <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Paid Claims</CardTitle>
@@ -238,6 +241,17 @@ export default function ProviderPage() {
                                     {totalArb}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">Arbitration flagged</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">No OON</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-blue-600">
+                                    {totalNoOon}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Benefit exhausted</p>
                             </CardContent>
                         </Card>
                     </motion.div>
