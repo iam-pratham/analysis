@@ -49,7 +49,7 @@ export default function DashboardPage() {
     const status = String(c.claimStatus || "").toLowerCase()
     const isNoOon = status.includes("no oon") || status.includes("benefit exhausted")
     if (isNoOon) return false
-    return c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("under arbitration") || status.includes("lop")
+    return c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("arbitration") || status.includes("lop")
   }).length
   const paidCount = filteredClaims.filter((c) =>
     String(c.paymentStatus).toLowerCase().includes("paid") ||

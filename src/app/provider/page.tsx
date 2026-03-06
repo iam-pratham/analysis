@@ -44,7 +44,12 @@ export default function ProviderPage() {
         let tNoOon = 0
 
         filteredClaims.forEach(c => {
-            const status = String(c.claimStatus || (c as any).report || '').toLowerCase();
+            const statusStr = String(c.claimStatus || (c as any).report || '').toLowerCase();
+            const payStatusStr = String(c.paymentStatus || "").toLowerCase();
+            const combinedStatus = (statusStr + " " + payStatusStr).toLowerCase();
+            const isPaid = combinedStatus.includes('paid');
+            const isNoOon = statusStr.includes("no oon") || statusStr.includes("benefit exhausted")
+
             const name = c.doctorName || "Unknown"
             const nameLower = name.toLowerCase()
 
@@ -53,15 +58,12 @@ export default function ProviderPage() {
             tPaid += (c.paidAmt || 0)
 
             // Align with Reports and Dashboard logic
-            const statusLower = status.toLowerCase()
-            const isNoOon = statusLower.includes("no oon") || statusLower.includes("benefit exhausted")
-
-            if (statusLower.includes('paid')) tPaidClaims++
-            if (c.denialIndicator) tDenied++
-            if (!isNoOon && (c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || statusLower.includes('arbitration') || statusLower.includes('lop'))) {
+            if (isPaid) tPaidClaims++
+            if (c.denialIndicator || statusStr.includes('denied') || statusStr.includes('deni') || combinedStatus.includes('denied')) tDenied++
+            if (!isNoOon && (c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || statusStr.includes('arbitration') || statusStr.includes('lop'))) {
                 tArb++
             }
-            if (status.includes('no oon') || status.includes('benefit exhausted')) tNoOon++
+            if (statusStr.includes('no oon') || statusStr.includes('benefit exhausted')) tNoOon++
 
             // Categorization based on pre-processed suffixes in data context
             const isChiro = name.includes(' - Chiro');

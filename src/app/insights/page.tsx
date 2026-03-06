@@ -24,75 +24,82 @@ const itemVariants = {
 export default function ReportsPage() {
     const { filteredClaims, claims } = useData()
 
-    const statusMetrics = React.useMemo(() => {
+    const { metrics, chartData } = React.useMemo(() => {
         let deductible = 0;
-        let pending = 0;
+        let pendingCount = 0;
         let arbLop = 0;
         let noOon = 0;
         let maxLimit = 0;
-        let paid = 0;
-        let denied = 0;
+        let paidCount = 0;
+
+        // Independent counters to match Dashboard and Provider exactly
+        let cardPaid = 0;
+        let cardArbLop = 0;
+        let cardNoOon = 0;
+        let cardDenied = 0;
 
         filteredClaims.forEach(c => {
-            const status = String(c.claimStatus || "").toLowerCase().trim();
-            const payStatus = String(c.paymentStatus || "").toLowerCase().trim();
-            const fullText = (status + " " + payStatus).toLowerCase();
+            const statusStr = String(c.claimStatus || "").toLowerCase().trim();
+            const payStatusStr = String(c.paymentStatus || "").toLowerCase().trim();
+            const fullTextStr = (statusStr + " " + payStatusStr).toLowerCase();
+            const isPaidCase = fullTextStr.includes("paid");
+            const isNoOonCase = statusStr.includes("no oon") || statusStr.includes("benefit exhausted");
+            const isArbLopCase = !isNoOonCase && (c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || statusStr.includes("arbitration") || statusStr.includes("lop"));
+            const isDeniedCase = c.denialIndicator || statusStr.includes("denied") || statusStr.includes("deni") || fullTextStr.includes("denied") || fullTextStr.includes("deni");
 
-            // 1. Primary classification (Categorical)
-            if (status.includes("no oon") || status.includes("benefit exhausted")) {
+            // Independent Card Counts
+            if (isPaidCase) cardPaid++;
+            if (isArbLopCase) cardArbLop++;
+            if (isNoOonCase) cardNoOon++;
+            if (isDeniedCase) cardDenied++;
+
+            // Mutual Exclusion for Chart Distribution
+            if (isPaidCase) {
+                paidCount++;
+            }
+            else if (isNoOonCase) {
                 noOon++;
             }
-            else if (c.arbFlag || String(c.insuranceType).toUpperCase() === "LOP" || status.includes("under arbitration") || status.includes("lop")) {
+            else if (isArbLopCase) {
                 arbLop++;
             }
-            else if (status.includes("towards dedcutible") || status.includes("towards deductible") || status.includes("self pay")) {
+            else if (statusStr.includes("towards dedcutible") || statusStr.includes("towards deductible") || statusStr.includes("self pay") || fullTextStr.includes("deductible")) {
                 deductible++;
             }
-            else if (status.includes("in process")) {
-                pending++;
+            else if (statusStr.includes("in process") || fullTextStr.includes("pending")) {
+                pendingCount++;
             }
             else if (
-                status.includes("paid correctly") ||
-                status.includes("paid with 50% pre-cert penalty") ||
-                status.includes("paid with patient's responsibllity") ||
-                status.includes("paid with patient's responsibility")
-            ) {
-                paid++;
-            }
-            else if (
-                status.includes("reached maximum limit") ||
-                status.includes("not covered under patient's plan") ||
-                status.includes("not covered under patient plan")
+                statusStr.includes("reached maximum limit") ||
+                statusStr.includes("not covered under patient's plan") ||
+                statusStr.includes("not covered under patient plan") ||
+                fullTextStr.includes("maximum limit") ||
+                fullTextStr.includes("not covered")
             ) {
                 maxLimit++;
-            }
-            else if (fullText.includes("paid")) {
-                paid++;
-            }
-            else if (fullText.includes("pending")) {
-                pending++;
-            }
-            else if (fullText.includes("maximum limit") || fullText.includes("not covered")) {
-                maxLimit++;
-            }
-            else if (fullText.includes("deductible") || fullText.includes("selfpay")) {
-                deductible++;
-            }
-
-            if (status.includes("denied") || status.includes("deni") || fullText.includes("denied") || fullText.includes("deni")) {
-                denied++;
             }
         });
 
-        return [
+        const allMetrics = [
             { name: "Deductible / Self Pay", value: deductible, fill: "var(--color-chart-1)" },
-            { name: "Pending", value: pending, fill: "var(--color-chart-2)" },
-            { name: "ARB / LOP Volume", value: arbLop, fill: "var(--color-chart-3)" },
-            { name: "NO OON Volume", value: noOon, fill: "var(--color-chart-4)" },
+            { name: "Pending", value: pendingCount, fill: "var(--color-chart-2)" },
+            { name: "ARB / LOP Volume", value: cardArbLop, fill: "var(--color-chart-3)", isKpi: true },
+            { name: "NO OON Volume", value: cardNoOon, fill: "var(--color-chart-4)", isKpi: true },
             { name: "Max Limit / Not Covered", value: maxLimit, fill: "var(--color-chart-5)" },
-            { name: "Paid Claims", value: paid, fill: "var(--color-chart-6)" },
-            { name: "Denied", value: denied, fill: "var(--color-destructive)" }
-        ]
+            { name: "Paid Claims", value: cardPaid, fill: "var(--color-chart-6)", isKpi: true },
+            { name: "Denied", value: cardDenied, fill: "var(--color-destructive)", isKpi: true }
+        ];
+
+        const chartItems = [
+            { name: "Deductible", value: deductible, fill: "var(--color-chart-1)" },
+            { name: "Pending", value: pendingCount, fill: "var(--color-chart-2)" },
+            { name: "ARB / LOP", value: arbLop, fill: "var(--color-chart-3)" },
+            { name: "No OON", value: noOon, fill: "var(--color-chart-4)" },
+            { name: "Max Limit", value: maxLimit, fill: "var(--color-chart-5)" },
+            { name: "Paid", value: paidCount, fill: "var(--color-chart-6)" }
+        ];
+
+        return { metrics: allMetrics, chartData: chartItems };
     }, [filteredClaims])
 
     const chartConfig = {
@@ -119,7 +126,7 @@ export default function ReportsPage() {
                 animate="show"
                 className="grid gap-4 md:grid-cols-3 lg:grid-cols-7"
             >
-                {statusMetrics.map((sm, i) => (
+                {metrics.map((sm: any, i: number) => (
                     <motion.div variants={itemVariants} key={i}>
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -146,7 +153,7 @@ export default function ReportsPage() {
                     </CardHeader>
                     <CardContent className="pb-4">
                         <ChartContainer config={chartConfig} className="min-h-[300px] w-full">
-                            <BarChart accessibilityLayer data={statusMetrics} margin={{ top: 30, right: 30, left: 0, bottom: 5 }}>
+                            <BarChart accessibilityLayer data={chartData} margin={{ top: 30, right: 30, left: 0, bottom: 5 }}>
                                 <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
                                 <XAxis
                                     dataKey="name"
@@ -158,7 +165,7 @@ export default function ReportsPage() {
                                 <YAxis tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                 <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
                                 <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={60}>
-                                    {statusMetrics.map((entry, index) => (
+                                    {chartData.map((entry: any, index: number) => (
                                         <Cell
                                             key={`cell-${index}`}
                                             fill={entry.fill}
