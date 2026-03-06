@@ -290,10 +290,18 @@ export default function ProviderPage() {
                                         <LabelList
                                             dataKey="usage"
                                             position="top"
-                                            offset={10}
-                                            className="fill-foreground/80 font-bold"
+                                            offset={26}
+                                            style={{ fill: "#dc2626", fontWeight: 700 }}
+                                            fontSize={12}
+                                            formatter={(val: number) => val.toLocaleString()}
+                                        />
+                                        <LabelList
+                                            dataKey="usage"
+                                            position="top"
+                                            offset={11}
+                                            style={{ fill: "var(--color-muted-foreground)", fontWeight: 500 }}
                                             fontSize={11}
-                                            formatter={(val: number) => `${val.toLocaleString()} (${((val / totalCptUsages) * 100 || 0).toFixed(1)}%)`}
+                                            formatter={(val: number) => `(${((val / totalCptUsages) * 100 || 0).toFixed(1)}%)`}
                                         />
                                     </Bar>
                                 </BarChart>
