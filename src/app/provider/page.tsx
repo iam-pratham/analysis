@@ -130,7 +130,7 @@ export default function ProviderPage() {
                                 <BarChart accessibilityLayer data={providerData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 120, left: 10, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.2} />
                                     <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
-                                    <YAxis type="category" dataKey="name" width={100} tickLine={false} axisLine={false} style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }} />
+                                    <YAxis type="category" dataKey="name" width={180} tickLine={false} axisLine={false} style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }} />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent indicator="line" />} />
                                     <Bar dataKey="claims" radius={[0, 4, 4, 0]} maxBarSize={40}>
                                         {providerData.slice(0, 10).map((entry, index) => (

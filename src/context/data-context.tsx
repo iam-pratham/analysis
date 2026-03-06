@@ -89,10 +89,13 @@ export function DataProvider({ children }: { children: ReactNode }) {
             } else if (
                 nameLower.includes('bruce j buckman') ||
                 nameLower.includes('christian s gartner') ||
-                nameLower.includes('monreo castro') ||
+                nameLower.includes('monroe castro') ||
+                nameLower.includes('monreo castro') || // Handle previous typo if it exists in raw data
                 nameLower.includes('sridhar yalamanchili') ||
                 nameLower.includes('marianne decastro') ||
                 nameLower.includes('andy koser') ||
+                nameLower.includes('david adin') ||
+                nameLower.includes('billy ford') ||
                 nameLower.includes('sferra') ||
                 nameLower.includes('sferry')
             ) {
@@ -107,7 +110,14 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 docSuffix = " - OT";
             }
 
-            const cleanDoc = docSuffix ? `${rawDoc.replace(/\s+-\s+(Chiro|PT|OT|CHIRO)$/i, '')}${docSuffix}` : rawDoc;
+            // Cleanup name string from degrees and existing suffixes
+            // Remove common degree suffixes like MS, Ms. and existing specialty markers
+            const cleanRaw = rawDoc
+                .replace(/\s+(MS|Ms\.?|PT|OT|CHIRO|MD|DPT)$/i, '')
+                .replace(/\s+-\s+(Chiro|PT|OT|CHIRO)$/i, '')
+                .trim();
+
+            const cleanDoc = docSuffix ? `${cleanRaw}${docSuffix}` : cleanRaw;
 
             return {
                 ...c,
