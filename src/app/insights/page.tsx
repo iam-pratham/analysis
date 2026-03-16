@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { format } from "date-fns"
+import { formatNJDate, parseNJDate } from "@/lib/date-utils"
 import { 
     CheckCircle2, 
     Stethoscope, 
@@ -157,16 +157,6 @@ export default function ReportsPage() {
     const [displayBucket, setDisplayBucket] = React.useState<string | null>(null)
     const [modalPage, setModalPage] = React.useState(1)
     const modalRowsPerPage = 50
-
-    // Helper to parse dates without timezone shifts
-    const parseDateSafe = (dateStr: any) => {
-        if (!dateStr) return null
-        if (typeof dateStr === 'string' && dateStr.includes('-') && dateStr.length === 10) {
-            const [y, m, d] = dateStr.split('-').map(Number)
-            return new Date(y, m - 1, d)
-        }
-        return new Date(dateStr)
-    }
 
     // Synchronize display bucket but don't clear it immediately on close
     // This keeps the content stable during the closing animation
@@ -386,7 +376,7 @@ export default function ReportsPage() {
                                     {paginatedModalClaims.map((claim) => (
                                         <TableRow key={claim.id} className="hover:bg-primary/[0.03] transition-colors border-b border-border/50">
                                             <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
-                                                {format(parseDateSafe(claim.serviceDate) || new Date(), "MM-dd-yyyy")}
+                                                {formatNJDate(claim.serviceDate)}
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap text-xs font-bold py-4">
                                                 {claim.patientName}

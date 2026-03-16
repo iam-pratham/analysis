@@ -4,6 +4,7 @@ import React, { useState, useCallback } from "react"
 import { useDropzone } from "react-dropzone"
 import * as XLSX from "xlsx"
 import { useData, Claim } from "@/context/data-context"
+import { parseNJDate } from "@/lib/date-utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FileSpreadsheet, CheckCircle2, AlertCircle, Wand2 } from "lucide-react"
@@ -58,9 +59,16 @@ export default function UploadPage() {
 
                 if (!providerName && !doctorName && !cptCode && !claimId && !insuranceCompany) return
 
-                const parseDate = (raw: unknown) => {
+                const cleanRawDate = (raw: unknown) => {
                     if (!raw) return null
-                    if (typeof raw === "number") return new Date(Math.round((raw - 25569) * 86400 * 1000))
+                    if (typeof raw === "number") {
+                        // Excel number format
+                        const d = new Date(Math.round((raw - 25569) * 86400 * 1000))
+                        const year = d.getFullYear()
+                        const month = d.getMonth() + 1
+                        const day = d.getDate()
+                        return `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`
+                    }
 
                     if (typeof raw === "string") {
                         const str = raw.trim();
@@ -70,7 +78,9 @@ export default function UploadPage() {
                             const d = parseInt(str.substring(2, 4), 10);
                             let y = parseInt(str.substring(4, 6), 10);
                             y += (y < 50 ? 2000 : 1900);
-                            return new Date(y, m - 1, d);
+                            const mm = m < 10 ? `0${m}` : m;
+                            const dd = d < 10 ? `0${d}` : d;
+                            return `${y}-${mm}-${dd}`;
                         }
                         // Handle MM/DD/YY or MM/DD/YYYY or MM-DD-YY/YYYY
                         const parts = str.split(/[\/\-]/);
@@ -83,17 +93,19 @@ export default function UploadPage() {
                                 if (parts[2].length === 2) {
                                     y += (y < 50 ? 2000 : 1900);
                                 }
-                                return new Date(y, m - 1, d);
+                                // Return as YYYY-MM-DD string for parseNJDate to handle as local
+                                const mm = m < 10 ? `0${m}` : m;
+                                const dd = d < 10 ? `0${d}` : d;
+                                return `${y}-${mm}-${dd}`;
                             }
                         }
                     }
 
-                    const d = new Date(raw as string);
-                    return isNaN(d.getTime()) ? null : d;
+                    return raw;
                 }
 
-                const serviceDate = parseDate(serviceDateRaw) || new Date()
-                const claimSentDate = parseDate(claimSentDateRaw)
+                const serviceDate = parseNJDate(cleanRawDate(serviceDateRaw))
+                const claimSentDate = claimSentDateRaw ? parseNJDate(cleanRawDate(claimSentDateRaw)) : null
 
                 let isDeni = false
                 let foundPaid = false
