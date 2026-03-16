@@ -59,45 +59,39 @@ export default function UploadPage() {
 
                 if (!providerName && !doctorName && !cptCode && !claimId && !insuranceCompany) return
 
-                const cleanRawDate = (raw: unknown) => {
-                    if (!raw) return null
+                const cleanRawDate = (raw: any) => {
+                    if (raw === undefined || raw === null || raw === "") return null;
+                    
                     if (typeof raw === "number") {
-                        // Excel number format
-                        const d = new Date(Math.round((raw - 25569) * 86400 * 1000))
-                        const year = d.getFullYear()
-                        const month = d.getMonth() + 1
-                        const day = d.getDate()
-                        return `${year}-${month < 10 ? `0${month}` : month}-${day < 10 ? `0${day}` : day}`
+                        // Excel serial date shift fix:
+                        // Use a static base date in UTC to get Y/M/D then return string
+                        const excelDate = new Date(Date.UTC(1899, 11, 30 + Math.floor(raw)));
+                        const y = excelDate.getUTCFullYear();
+                        const m = excelDate.getUTCMonth() + 1;
+                        const d = excelDate.getUTCDate();
+                        return `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
                     }
 
                     if (typeof raw === "string") {
                         const str = raw.trim();
                         // Handle 6-digit mmddyy
                         if (/^\d{6}$/.test(str)) {
-                            const m = parseInt(str.substring(0, 2), 10);
-                            const d = parseInt(str.substring(2, 4), 10);
+                            const m = str.substring(0, 2);
+                            const d = str.substring(2, 4);
                             let y = parseInt(str.substring(4, 6), 10);
                             y += (y < 50 ? 2000 : 1900);
-                            const mm = m < 10 ? `0${m}` : m;
-                            const dd = d < 10 ? `0${d}` : d;
-                            return `${y}-${mm}-${dd}`;
+                            return `${y}-${m}-${d}`;
                         }
                         // Handle MM/DD/YY or MM/DD/YYYY or MM-DD-YY/YYYY
                         const parts = str.split(/[\/\-]/);
                         if (parts.length === 3) {
-                            let m = parseInt(parts[0], 10);
-                            let d = parseInt(parts[1], 10);
-                            let y = parseInt(parts[2], 10);
-
-                            if (!isNaN(m) && !isNaN(d) && !isNaN(y)) {
-                                if (parts[2].length === 2) {
-                                    y += (y < 50 ? 2000 : 1900);
-                                }
-                                // Return as YYYY-MM-DD string for parseNJDate to handle as local
-                                const mm = m < 10 ? `0${m}` : m;
-                                const dd = d < 10 ? `0${d}` : d;
-                                return `${y}-${mm}-${dd}`;
+                            let m = parts[0].padStart(2, '0');
+                            let d = parts[1].padStart(2, '0');
+                            let yStr = parts[2];
+                            if (yStr.length === 2) {
+                                yStr = (parseInt(yStr, 10) < 50 ? "20" : "19") + yStr;
                             }
+                            return `${yStr}-${m}-${d}`;
                         }
                     }
 
