@@ -4,7 +4,6 @@ import React, { useState, useCallback } from "react"
 import { useDropzone } from "react-dropzone"
 import * as XLSX from "xlsx"
 import { useData, Claim } from "@/context/data-context"
-import { parseNJDate } from "@/lib/date-utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { FileSpreadsheet, CheckCircle2, AlertCircle, Wand2 } from "lucide-react"
@@ -59,47 +58,42 @@ export default function UploadPage() {
 
                 if (!providerName && !doctorName && !cptCode && !claimId && !insuranceCompany) return
 
-                const cleanRawDate = (raw: any) => {
-                    if (raw === undefined || raw === null || raw === "") return null;
-                    
-                    if (typeof raw === "number") {
-                        // Excel serial date shift fix:
-                        // Use a static base date in UTC to get Y/M/D then return string
-                        const excelDate = new Date(Date.UTC(1899, 11, 30 + Math.floor(raw)));
-                        const y = excelDate.getUTCFullYear();
-                        const m = excelDate.getUTCMonth() + 1;
-                        const d = excelDate.getUTCDate();
-                        return `${y}-${m < 10 ? '0' + m : m}-${d < 10 ? '0' + d : d}`;
-                    }
+                const parseDate = (raw: unknown) => {
+                    if (!raw) return null
+                    if (typeof raw === "number") return new Date(Math.round((raw - 25569) * 86400 * 1000))
 
                     if (typeof raw === "string") {
                         const str = raw.trim();
                         // Handle 6-digit mmddyy
                         if (/^\d{6}$/.test(str)) {
-                            const m = str.substring(0, 2);
-                            const d = str.substring(2, 4);
+                            const m = parseInt(str.substring(0, 2), 10);
+                            const d = parseInt(str.substring(2, 4), 10);
                             let y = parseInt(str.substring(4, 6), 10);
                             y += (y < 50 ? 2000 : 1900);
-                            return `${y}-${m}-${d}`;
+                            return new Date(y, m - 1, d);
                         }
                         // Handle MM/DD/YY or MM/DD/YYYY or MM-DD-YY/YYYY
                         const parts = str.split(/[\/\-]/);
                         if (parts.length === 3) {
-                            let m = parts[0].padStart(2, '0');
-                            let d = parts[1].padStart(2, '0');
-                            let yStr = parts[2];
-                            if (yStr.length === 2) {
-                                yStr = (parseInt(yStr, 10) < 50 ? "20" : "19") + yStr;
+                            let m = parseInt(parts[0], 10);
+                            let d = parseInt(parts[1], 10);
+                            let y = parseInt(parts[2], 10);
+
+                            if (!isNaN(m) && !isNaN(d) && !isNaN(y)) {
+                                if (parts[2].length === 2) {
+                                    y += (y < 50 ? 2000 : 1900);
+                                }
+                                return new Date(y, m - 1, d);
                             }
-                            return `${yStr}-${m}-${d}`;
                         }
                     }
 
-                    return raw;
+                    const d = new Date(raw as string);
+                    return isNaN(d.getTime()) ? null : d;
                 }
 
-                const serviceDate = parseNJDate(cleanRawDate(serviceDateRaw))
-                const claimSentDate = claimSentDateRaw ? parseNJDate(cleanRawDate(claimSentDateRaw)) : null
+                const serviceDate = parseDate(serviceDateRaw) || new Date()
+                const claimSentDate = parseDate(claimSentDateRaw)
 
                 let isDeni = false
                 let foundPaid = false

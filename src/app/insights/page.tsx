@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { formatNJDate, parseNJDate } from "@/lib/date-utils"
+import { format } from "date-fns"
 import { 
     CheckCircle2, 
     Stethoscope, 
@@ -38,6 +38,14 @@ import {
     Info
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+
+const parseDateSafe = (dateStr: any) => {
+    if (!dateStr) return new Date()
+    if (typeof dateStr === 'string' && dateStr.includes('-') && !dateStr.includes('T')) {
+        return new Date(dateStr + 'T00:00:00')
+    }
+    return new Date(dateStr)
+}
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -351,9 +359,6 @@ export default function ReportsPage() {
                                         {activeClaimsForModal.length} RECORDS
                                     </span>
                                 </DialogTitle>
-                                <DialogDescription className="mt-1 font-medium text-muted-foreground">
-                                    Full patient breakdown and billing details for the selected category.
-                                </DialogDescription>
                             </div>
                         </div>
                     </DialogHeader>
@@ -368,58 +373,52 @@ export default function ReportsPage() {
                                         <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Insurance & Payer</TableHead>
                                         <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Attending Physician</TableHead>
                                         <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">CPT Codes</TableHead>
-                                        <TableHead className="text-right py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Billed Amount</TableHead>
-                                        <TableHead className="text-right py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paid Amount</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Billed Amount</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paid Amount</TableHead>
                                         <TableHead className="py-4 pr-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Detailed Claim Status</TableHead>
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {paginatedModalClaims.map((claim) => {
-                                        const docParts = claim.doctorName?.split(' - ') || [];
-                                        const docNameOnly = docParts[0];
-                                        const docSpecialty = docParts[1];
-
-                                        return (
-                                            <TableRow key={claim.id} className="hover:bg-primary/[0.03] transition-colors border-b border-border/50">
-                                                <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
-                                                    {formatNJDate(claim.serviceDate)}
-                                                </TableCell>
-                                                <TableCell className="whitespace-nowrap text-xs font-bold py-4">
-                                                    {claim.patientName}
-                                                </TableCell>
-                                                <TableCell className="text-xs py-4">
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="font-bold text-foreground line-clamp-1">{claim.insuranceCompany}</span>
-                                                        <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">{claim.insuranceType}</span>
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-xs py-4">
-                                                    <div className="flex flex-col gap-0.5">
-                                                        <span className="font-bold text-foreground line-clamp-1">{docNameOnly}</span>
-                                                        {docSpecialty && (
-                                                            <span className="text-[10px] font-bold text-primary/70 uppercase tracking-tighter">
-                                                                {docSpecialty}
-                                                            </span>
-                                                        )}
-                                                    </div>
-                                                </TableCell>
-                                                <TableCell className="text-xs font-mono text-muted-foreground py-4">
-                                                    {claim.cptCode}
-                                                </TableCell>
-                                                <TableCell className="text-right text-xs font-bold py-4">
-                                                    ${claim.billedAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </TableCell>
-                                                <TableCell className="text-right text-xs font-black text-green-600 py-4">
-                                                    ${claim.paidAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                                </TableCell>
-                                                <TableCell className="py-4 pr-6">
-                                                    <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-1 rounded inline-block max-w-[280px] break-words uppercase leading-tight">
-                                                        {claim.claimStatus}
+                                    {paginatedModalClaims.map((claim) => (
+                                        <TableRow key={claim.id} className="hover:bg-primary/[0.03] transition-colors border-b border-border/50">
+                                            <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
+                                                {format(parseDateSafe(claim.serviceDate), "MM-dd-yyyy")}
+                                            </TableCell>
+                                            <TableCell className="whitespace-nowrap text-xs font-bold py-4">
+                                                {claim.patientName}
+                                            </TableCell>
+                                            <TableCell className="text-xs py-4">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="font-bold text-foreground line-clamp-1">{claim.insuranceCompany}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">{claim.insuranceType}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-xs py-4">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="font-bold text-foreground line-clamp-1">{claim.doctorName?.split(' - ')[0] || "N/A"}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
+                                                        {claim.doctorName?.includes(' - Chiro') ? 'Chiro' : 
+                                                         claim.doctorName?.includes(' - PT') ? 'PT' : 
+                                                         claim.doctorName?.includes(' - OT') ? 'OT' : 'N/A'}
                                                     </span>
-                                                </TableCell>
-                                            </TableRow>
-                                        );
-                                    })}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-xs font-mono text-muted-foreground py-4">
+                                                {claim.cptCode}
+                                            </TableCell>
+                                            <TableCell className="text-xs font-bold py-4">
+                                                ${claim.billedAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </TableCell>
+                                            <TableCell className="text-xs font-black text-green-600 py-4">
+                                                ${claim.paidAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </TableCell>
+                                            <TableCell className="py-4 pr-6">
+                                                <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-1 rounded inline-block max-w-[280px] break-words uppercase leading-tight">
+                                                    {claim.claimStatus}
+                                                </span>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
                                 </TableBody>
                             </Table>
                         </div>

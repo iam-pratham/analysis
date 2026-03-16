@@ -3,7 +3,7 @@
 import React, { useState, useMemo } from "react"
 import { useData } from "@/context/data-context"
 import { GlobalFilters } from "@/components/global-filters"
-import { formatNJDate } from "@/lib/date-utils"
+import { format } from "date-fns"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
@@ -18,6 +18,14 @@ const containerVariants = {
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+}
+
+const parseDateSafe = (dateStr: any) => {
+    if (!dateStr) return null
+    if (typeof dateStr === 'string' && dateStr.includes('-') && !dateStr.includes('T')) {
+        return new Date(dateStr + 'T00:00:00')
+    }
+    return new Date(dateStr)
 }
 
 export default function RawDataPage() {
@@ -81,7 +89,12 @@ export default function RawDataPage() {
                                         {paginatedClaims.map((claim) => (
                                             <TableRow key={claim.id} className="hover:bg-muted/20 transition-colors border-b border-white/5">
                                                 <TableCell className="font-mono text-xs whitespace-nowrap text-primary">{claim.claimId || claim.id.slice(0, 8)}</TableCell>
-                                                <TableCell className="whitespace-nowrap text-xs">{formatNJDate(claim.serviceDate)}</TableCell>
+                                                <TableCell className="whitespace-nowrap text-xs">
+                                                    {(() => {
+                                                        const d = parseDateSafe(claim.serviceDate)
+                                                        return d ? format(d, "MM-dd-yyyy") : "N/A"
+                                                    })()}
+                                                </TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs font-medium">{claim.patientName || "N/A"}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{claim.insuranceCompany || "N/A"}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs">
@@ -91,7 +104,12 @@ export default function RawDataPage() {
                                                 <TableCell className="whitespace-nowrap text-xs">{claim.providerName}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{claim.doctorName}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs">{claim.cptCode}</TableCell>
-                                                <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{claim.claimSentDate ? formatNJDate(claim.claimSentDate) : "N/A"}</TableCell>
+                                                <TableCell className="whitespace-nowrap text-xs text-muted-foreground">
+                                                    {(() => {
+                                                        const d = parseDateSafe(claim.claimSentDate)
+                                                        return d ? format(d, "MM-dd-yyyy") : "N/A"
+                                                    })()}
+                                                </TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs text-right font-medium">${claim.billedAmt?.toFixed(2) || "0.00"}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs text-right text-green-500 font-medium">${claim.paidAmt?.toFixed(2) || "0.00"}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs font-semibold">
