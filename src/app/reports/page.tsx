@@ -12,10 +12,7 @@ import { motion } from "framer-motion"
 
 const containerVariants = {
     hidden: { opacity: 0 },
-    show: {
-        opacity: 1,
-        transition: { staggerChildren: 0.1 }
-    }
+    show: { opacity: 1, transition: { staggerChildren: 0.1 } }
 }
 
 const itemVariants = {
@@ -23,25 +20,20 @@ const itemVariants = {
     show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
 }
 
-export default function ReportsPage() {
+export default function RawDataPage() {
     const { filteredClaims, claims } = useData()
     const [page, setPage] = useState(1)
     const rowsPerPage = 50
-
-    const [sortConfig, setSortConfig] = useState<{ key: string, direction: 'asc' | 'desc' } | null>(null)
+    const [sortConfig, setSortConfig] = useState<{ key: string; direction: "asc" | "desc" } | null>(null)
 
     const sortedClaims = useMemo(() => {
         const sortableItems = [...filteredClaims]
         if (sortConfig !== null) {
             sortableItems.sort((a, b) => {
-                const aValue = a[sortConfig.key as keyof typeof a] ?? ''
-                const bValue = b[sortConfig.key as keyof typeof b] ?? ''
-                if (aValue < bValue) {
-                    return sortConfig.direction === 'asc' ? -1 : 1
-                }
-                if (aValue > bValue) {
-                    return sortConfig.direction === 'asc' ? 1 : -1
-                }
+                const aValue = a[sortConfig.key as keyof typeof a] ?? ""
+                const bValue = b[sortConfig.key as keyof typeof b] ?? ""
+                if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1
+                if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1
                 return 0
             })
         }
@@ -52,10 +44,8 @@ export default function ReportsPage() {
     const paginatedClaims = sortedClaims.slice((page - 1) * rowsPerPage, page * rowsPerPage)
 
     const handleSort = (key: string) => {
-        let direction: 'asc' | 'desc' = 'asc'
-        if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
-            direction = 'desc'
-        }
+        let direction: "asc" | "desc" = "asc"
+        if (sortConfig && sortConfig.key === key && sortConfig.direction === "asc") direction = "desc"
         setSortConfig({ key, direction })
         setPage(1)
     }
@@ -69,11 +59,7 @@ export default function ReportsPage() {
             <h1 className="text-3xl font-bold tracking-tight text-foreground">April thru December 2025 - Chiro / PT / OT Raw Data</h1>
             <GlobalFilters />
 
-            <motion.div
-                variants={containerVariants}
-                initial="hidden"
-                animate="show"
-            >
+            <motion.div variants={containerVariants} initial="hidden" animate="show">
                 <motion.div variants={itemVariants}>
                     <Card className="bg-card/60 backdrop-blur-xl border-border/50 shadow-sm">
                         <CardContent className="p-0">
@@ -84,7 +70,7 @@ export default function ReportsPage() {
                                             {["claimId", "serviceDate", "patientName", "insuranceCompany", "insuranceType", "payerId", "providerName", "doctorName", "cptCode", "claimSentDate", "billedAmt", "paidAmt", "claimStatus"].map((key) => (
                                                 <TableHead key={key} className="cursor-pointer whitespace-nowrap text-xs hover:bg-muted/50 transition-colors" onClick={() => handleSort(key)}>
                                                     <div className="flex items-center gap-1">
-                                                        {key.replace(/([A-Z])/g, ' $1').trim().toUpperCase()}
+                                                        {key.replace(/([A-Z])/g, " $1").trim().toUpperCase()}
                                                         <ArrowUpDown className="h-3 w-3 text-muted-foreground/50" />
                                                     </div>
                                                 </TableHead>
@@ -109,7 +95,9 @@ export default function ReportsPage() {
                                                 <TableCell className="whitespace-nowrap text-xs text-right font-medium">${claim.billedAmt?.toFixed(2) || "0.00"}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs text-right text-green-500 font-medium">${claim.paidAmt?.toFixed(2) || "0.00"}</TableCell>
                                                 <TableCell className="whitespace-nowrap text-xs font-semibold">
-                                                    <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${claim.claimStatus?.toLowerCase() === 'paid' ? 'bg-green-500/10 text-green-500' : 'bg-muted text-muted-foreground'}`}>{claim.claimStatus}</span>
+                                                    <span className={`px-2 py-1 rounded text-[10px] uppercase tracking-wider ${claim.claimStatus?.toLowerCase() === "paid" || claim.claimStatus?.toLowerCase().includes("paid correctly") ? "bg-green-500/10 text-green-500" : "bg-muted text-muted-foreground"}`}>
+                                                        {claim.claimStatus}
+                                                    </span>
                                                 </TableCell>
                                             </TableRow>
                                         ))}
@@ -119,7 +107,9 @@ export default function ReportsPage() {
 
                             <div className="flex items-center justify-between px-6 py-4 border-t border-white/5 bg-muted/10 rounded-b-xl">
                                 <div className="text-sm text-muted-foreground">
-                                    Showing <span className="font-medium text-foreground">{(page - 1) * rowsPerPage + 1}</span> to <span className="font-medium text-foreground">{Math.min(page * rowsPerPage, sortedClaims.length)}</span> of <span className="font-medium text-foreground">{sortedClaims.length}</span> entries
+                                    Showing <span className="font-medium text-foreground">{(page - 1) * rowsPerPage + 1}</span> to{" "}
+                                    <span className="font-medium text-foreground">{Math.min(page * rowsPerPage, sortedClaims.length)}</span> of{" "}
+                                    <span className="font-medium text-foreground">{sortedClaims.length}</span> entries
                                 </div>
                                 <div className="flex items-center gap-4">
                                     <span className="text-sm font-medium text-muted-foreground">Page <span className="text-foreground">{page}</span> of {totalPages}</span>
