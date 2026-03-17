@@ -63,7 +63,7 @@ const STATUS_THEMES: Record<string, {
     color: string, 
     match: (s: string) => boolean 
 }> = {
-    "PAID": {
+    "Paid": {
         icon: CheckCircle2,
         color: "text-green-600",
         match: (s) => s === "paid correctly" || s.startsWith("paid correctly"),
@@ -73,7 +73,7 @@ const STATUS_THEMES: Record<string, {
         color: "text-sky-500",
         match: (s) => s.includes("towards deductible") || s.includes("towards dedcutible") || s.includes("paid with patient"),
     },
-    "Paid with 50% pre-cert Penalty": {
+    "Paid With 50% Pre-Cert Penalty": {
         icon: ShieldAlert,
         color: "text-[var(--color-chart-4)]",
         match: (s) => s.includes("paid with 50%") || s.includes("pre-cert"),
@@ -88,22 +88,22 @@ const STATUS_THEMES: Record<string, {
         color: "text-[var(--color-chart-1)]",
         match: (s) => s === "" || s.includes("in process") || s.includes("pending"),
     },
-    "Benefit Exhausted/LOP": {
+    "Benefit Exhausted / LOP": {
         icon: ZapOff,
         color: "text-orange-600",
         match: (s) => (s.includes("benefit exhausted") && s.includes("lop")) || (s.includes("benefit exhausted") && !s.includes("secondary")),
     },
-    "With Secondary Insurance": {
+    "Secondary Insurance": {
         icon: Layers,
         color: "text-[var(--color-chart-2)]",
         match: (s) => (s.includes("benefit exhausted") && s.includes("secondary")) || (s.includes("no oon benefit") && s.includes("secondary")),
     },
-    "NO OON BENEFIT/LOP": {
+    "No OON Benefit / LOP": {
         icon: Ban,
         color: "text-orange-600",
         match: (s) => s.includes("no oon benefit") && s.includes("lop"),
     },
-    "NO OON BENEFIT/Pt's responsibility": {
+    "No OON Benefit / Pt's Responsibility": {
         icon: UserCheck,
         color: "text-orange-600",
         match: (s) => s.includes("no oon benefit") && (s.includes("pt") || s.includes("patient")),
@@ -123,12 +123,12 @@ const STATUS_THEMES: Record<string, {
         color: "text-[var(--color-chart-5)]",
         match: (s) => s === "pdpt" || s.startsWith("pdpt"),
     },
-    "EFFORTS EXHAUSTED": {
+    "Efforts Exhausted": {
         icon: AlertTriangle,
         color: "text-zinc-500",
         match: (s) => s.includes("efforts exhausted"),
     },
-    "Not Covered under patient's Plan": {
+    "Not Covered Under Patient's Plan": {
         icon: XOctagon,
         color: "text-red-500",
         match: (s) => s.includes("not covered"),

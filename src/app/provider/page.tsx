@@ -31,17 +31,17 @@ const itemVariants = {
 export default function ProviderPage() {
     const { filteredClaims, claims } = useData()
 
-    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalDenied, totalArb, totalNoOon, totalChiro, totalPT, totalOT } = useMemo(() => {
+    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalArb, totalLop, totalNoOon, totalChiro, totalPT, totalOT } = useMemo(() => {
         const pMap: Record<string, number> = {}
         let tBilled = 0
         let tPaid = 0
         let tPaidClaims = 0
-        let tDenied = 0
         let tArb = 0
+        let tLop = 0
+        let tNoOon = 0
         let tChiro = 0
         let tPT = 0
         let tOT = 0
-        let tNoOon = 0
 
         filteredClaims.forEach(c => {
             const statusStr = String(c.claimStatus || (c as any).report || '').toLowerCase();
@@ -56,31 +56,27 @@ export default function ProviderPage() {
             pMap[name] = (pMap[name] || 0) + 1
             tBilled += (c.billedAmt || 0)
             tPaid += (c.paidAmt || 0)
-
-            // Align with Reports and Dashboard logic
-            if (isPaid) tPaidClaims++
-            if (c.denialIndicator || statusStr.includes('denied') || statusStr.includes('deni') || combinedStatus.includes('denied')) tDenied++
-            // Align ARB count exactly with Dashboard logic
+            // Categorization helpers (Exact sync with Reports/Insights logic)
             const isPaidStatus = statusStr.includes("paid correctly") || statusStr.includes("paid with 50%") || statusStr.includes("paid with patient")
             const isDeductible = statusStr.includes("towards dedcutible") || statusStr.includes("towards deductible") || statusStr.includes("self pay")
             const isInProcess = statusStr.includes("in process") || statusStr.includes("pending")
 
-            if (!isPaidStatus && !isDeductible && !isInProcess) {
-                if (
-                    statusStr.includes("under arbitration") ||
-                    statusStr.includes("benefit exhausted") ||
-                    statusStr.includes("denied-no oon") ||
-                    statusStr.includes("denied - no oon") ||
-                    statusStr.includes("no oon") ||
-                    statusStr === "lop" ||
-                    statusStr.includes("/lop") ||
-                    String(c.insuranceType || "").toUpperCase() === "LOP" ||
-                    c.arbFlag
-                ) {
-                    tArb++
-                }
-            }
-            if (statusStr.includes('no oon') || statusStr.includes('benefit exhausted')) tNoOon++
+            // Count Paid Claims
+            if (isPaidStatus) tPaidClaims++
+
+            // Count ARB / LOP / No OON seperately using exact Reports logic
+            const isArbMatch = statusStr.includes("under arbitration") || statusStr.includes("pip-geico") || statusStr.includes("pip geico")
+            const isLopMatch = (statusStr === "lop" || statusStr.includes("/lop") || statusStr.startsWith("lop/")) && !statusStr.includes("benefit exhausted") && !statusStr.includes("no oon benefit")
+            
+            // Sync exactly with ONLY the 2 specific "No OON" buckets from Insights
+            const isNoOonMatch = (
+                (statusStr.includes("no oon benefit") && statusStr.includes("lop")) ||
+                (statusStr.includes("no oon benefit") && (statusStr.includes("pt") || statusStr.includes("patient")))
+            )
+
+            if (isArbMatch) tArb++
+            if (isLopMatch) tLop++
+            if (isNoOonMatch) tNoOon++
 
             // Categorization based on pre-processed suffixes in data context
             const isChiro = name.includes(' - Chiro');
@@ -96,8 +92,8 @@ export default function ProviderPage() {
             totalBilled: tBilled,
             totalPaid: tPaid,
             totalPaidClaims: tPaidClaims,
-            totalDenied: tDenied,
             totalArb: tArb,
+            totalLop: tLop,
             totalNoOon: tNoOon,
             totalChiro: tChiro,
             totalPT: tPT,
@@ -180,7 +176,7 @@ export default function ProviderPage() {
                 </motion.div>
 
                 <div className="flex flex-col gap-4 h-full">
-                    <motion.div variants={itemVariants} className="grid grid-cols-1 gap-4 flex-1">
+                    <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 flex-1">
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Total Paid Amount</CardTitle>
@@ -190,6 +186,17 @@ export default function ProviderPage() {
                                     ${totalPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">Actual collected payments</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Paid Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-green-600">
+                                    {totalPaidClaims.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Successfully collected</p>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -230,27 +237,38 @@ export default function ProviderPage() {
                         </Card>
                     </motion.div>
 
-                    <motion.div variants={itemVariants} className="grid grid-cols-2 gap-4 flex-1">
+                    <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Paid Claims</CardTitle>
+                                <CardTitle className="text-sm font-medium">Under Arbitration</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-green-600">
-                                    {totalPaidClaims}
+                                <div className="text-2xl font-bold text-orange-600">
+                                    {totalArb.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Successfully collected</p>
+                                <p className="text-xs text-muted-foreground mt-1">PIP / Arbitration Cases</p>
                             </CardContent>
                         </Card>
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">ARB / LOP / No OON</CardTitle>
+                                <CardTitle className="text-sm font-medium">Straight LOP</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-orange-600">
-                                    {totalArb}
+                                <div className="text-2xl font-bold text-orange-500">
+                                    {totalLop.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Arbitration, LOP & No OON cases</p>
+                                <p className="text-xs text-muted-foreground mt-1">Letter of Protection Only</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">No OON / Ben. Exh</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-orange-400">
+                                    {totalNoOon.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Benefit Exhausted / No OON</p>
                             </CardContent>
                         </Card>
                     </motion.div>
