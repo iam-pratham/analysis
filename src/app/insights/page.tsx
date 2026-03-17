@@ -393,7 +393,7 @@ export default function ReportsPage() {
                             <div className="relative w-full sm:w-72 sm:pr-10">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input 
-                                    placeholder="Search patient, insurance, doctor..." 
+                                    placeholder="Search patient, DOS, provider" 
                                     className="pl-9 h-10 w-full bg-background/50 border-border focus:ring-primary/20 transition-all font-medium text-sm"
                                     value={searchTerm}
                                     onChange={(e) => {
