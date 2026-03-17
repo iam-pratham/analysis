@@ -106,12 +106,12 @@ const STATUS_THEMES: Record<string, {
         color: "text-[var(--color-chart-2)]",
         match: (s) => (s.includes("benefit exhausted") && s.includes("secondary")) || (s.includes("no oon benefit") && s.includes("secondary")),
     },
-    "No OON Benefit / LOP": {
+    "No OON Benefits / LOP": {
         icon: Ban,
         color: "text-orange-600",
         match: (s) => s.includes("no oon benefit") && s.includes("lop"),
     },
-    "No OON Benefit / Pt's Responsibility": {
+    "No OON Benefits / Pt's Responsibility": {
         icon: UserCheck,
         color: "text-orange-600",
         match: (s) => s.includes("no oon benefit") && (s.includes("pt") || s.includes("patient")),

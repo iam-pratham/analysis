@@ -344,13 +344,13 @@ export default function ProviderPage() {
                         </Card>
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">No OON / Ben. Exh</CardTitle>
+                                <CardTitle className="text-sm font-medium">No OON Benefits</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-orange-400">
                                     {totalNoOon.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Benefit Exhausted / No OON</p>
+                                <p className="text-xs text-muted-foreground mt-1">Non-covered OON services</p>
                             </CardContent>
                         </Card>
                     </motion.div>
