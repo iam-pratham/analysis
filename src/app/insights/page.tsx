@@ -18,6 +18,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { format } from "date-fns"
+import { AnimatePresence } from "framer-motion"
 import { 
     CheckCircle2,
     Stethoscope,
@@ -167,7 +168,19 @@ export default function ReportsPage() {
     const [displayBucket, setDisplayBucket] = React.useState<string | null>(null)
     const [modalPage, setModalPage] = React.useState(1)
     const [searchTerm, setSearchTerm] = React.useState("")
+    const [isPending, setIsPending] = React.useState(false)
     const modalRowsPerPage = 50
+
+    // Smooth loading effect for search
+    React.useEffect(() => {
+        if (searchTerm) {
+            setIsPending(true)
+            const timer = setTimeout(() => setIsPending(false), 300)
+            return () => clearTimeout(timer)
+        } else {
+            setIsPending(false)
+        }
+    }, [searchTerm])
 
     // Synchronize display bucket but don't clear it immediately on close
     // This keeps the content stable during the closing animation
@@ -357,12 +370,13 @@ export default function ReportsPage() {
                     if (!open) {
                         setSelectedBucket(null)
                         setSearchTerm("")
+                        setIsPending(false)
                         // Reset page after a short delay so user doesn't see it jump
                         setTimeout(() => setModalPage(1), 300)
                     }
                 }}
             >
-                <DialogContent className="sm:max-w-[96vw] w-[96vw] max-h-[94vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl transition-opacity duration-300 data-[state=closed]:zoom-out-100 data-[state=open]:zoom-in-100">
+                <DialogContent className="sm:max-w-[96vw] w-[96vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl transition-opacity duration-300">
                     <DialogHeader className="p-6 pb-4 border-b border-border shrink-0 bg-background/50 backdrop-blur-md">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
@@ -376,7 +390,7 @@ export default function ReportsPage() {
                                     </span>
                                 </DialogTitle>
                             </div>
-                            <div className="relative w-full sm:w-72">
+                            <div className="relative w-full sm:w-72 sm:pr-10">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input 
                                     placeholder="Search patient, insurance, doctor..." 
@@ -387,6 +401,15 @@ export default function ReportsPage() {
                                         setModalPage(1);
                                     }}
                                 />
+                                {isPending && (
+                                    <motion.div 
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        className="absolute right-14 top-1/2 -translate-y-1/2"
+                                    >
+                                        <RefreshCw className="h-3 w-3 animate-spin text-primary" />
+                                    </motion.div>
+                                )}
                             </div>
                         </div>
                     </DialogHeader>
@@ -407,46 +430,64 @@ export default function ReportsPage() {
                                     </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                    {paginatedModalClaims.map((claim) => (
-                                        <TableRow key={claim.id} className="hover:bg-primary/[0.03] transition-colors border-b border-border/50">
-                                            <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
-                                                {format(parseDateSafe(claim.serviceDate), "MM/dd/yyyy")}
-                                            </TableCell>
-                                            <TableCell className="whitespace-nowrap text-xs font-bold py-4">
-                                                {claim.patientName}
-                                            </TableCell>
-                                            <TableCell className="text-xs py-4">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="font-bold text-foreground line-clamp-1">{claim.insuranceCompany}</span>
-                                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">{claim.insuranceType}</span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-xs py-4">
-                                                <div className="flex flex-col gap-0.5">
-                                                    <span className="font-bold text-foreground line-clamp-1">{claim.doctorName?.split(' - ')[0] || "N/A"}</span>
-                                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
-                                                        {claim.doctorName?.includes(' - Chiro') ? 'Chiro' : 
-                                                         claim.doctorName?.includes(' - PT') ? 'PT' : 
-                                                         claim.doctorName?.includes(' - OT') ? 'OT' : 'N/A'}
-                                                    </span>
-                                                </div>
-                                            </TableCell>
-                                            <TableCell className="text-xs font-mono text-muted-foreground py-4">
-                                                {claim.cptCode}
-                                            </TableCell>
-                                            <TableCell className="text-xs font-bold py-4">
-                                                ${claim.billedAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </TableCell>
-                                            <TableCell className="text-xs font-black text-green-600 py-4">
-                                                ${claim.paidAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                                            </TableCell>
-                                            <TableCell className="py-4 pr-6">
-                                                <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-1 rounded inline-block max-w-[280px] break-words uppercase leading-tight">
-                                                    {claim.claimStatus}
-                                                </span>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
+                                    <AnimatePresence mode="popLayout">
+                                        {isPending ? (
+                                            <TableRow>
+                                                <TableCell colSpan={8} className="h-32 text-center">
+                                                    <div className="flex flex-col items-center justify-center gap-2 opacity-50">
+                                                        <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                                                        <p className="text-[10px] font-bold uppercase tracking-widest">Updating results...</p>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ) : (
+                                            paginatedModalClaims.map((claim) => (
+                                                <motion.tr 
+                                                    key={claim.id} 
+                                                    initial={{ opacity: 0, y: 4 }}
+                                                    animate={{ opacity: 1, y: 0 }}
+                                                    className="hover:bg-primary/[0.03] transition-colors border-b border-border/50 group/row"
+                                                >
+                                                    <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
+                                                        {format(parseDateSafe(claim.serviceDate), "MM/dd/yyyy")}
+                                                    </TableCell>
+                                                    <TableCell className="whitespace-nowrap text-xs font-bold py-4">
+                                                        {claim.patientName}
+                                                    </TableCell>
+                                                    <TableCell className="text-xs py-4">
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <span className="font-bold text-foreground line-clamp-1">{claim.insuranceCompany}</span>
+                                                            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">{claim.insuranceType}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-xs py-4">
+                                                        <div className="flex flex-col gap-0.5">
+                                                            <span className="font-bold text-foreground line-clamp-1">{claim.doctorName?.split(' - ')[0] || "N/A"}</span>
+                                                            <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
+                                                                {claim.doctorName?.includes(' - Chiro') ? 'Chiro' : 
+                                                                 claim.doctorName?.includes(' - PT') ? 'PT' : 
+                                                                 claim.doctorName?.includes(' - OT') ? 'OT' : 'N/A'}
+                                                            </span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell className="text-xs font-mono text-muted-foreground py-4">
+                                                        {claim.cptCode}
+                                                    </TableCell>
+                                                    <TableCell className="text-xs font-bold py-4">
+                                                        ${claim.billedAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </TableCell>
+                                                    <TableCell className="text-xs font-black text-green-600 py-4">
+                                                        ${claim.paidAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                                    </TableCell>
+                                                    <TableCell className="py-4 pr-6">
+                                                        <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-1 rounded inline-block max-w-[280px] break-words uppercase leading-tight">
+                                                            {claim.claimStatus}
+                                                        </span>
+                                                    </TableCell>
+                                                </motion.tr>
+                                            ))
+                                        )}
+                                    </AnimatePresence>
                                 </TableBody>
                             </Table>
                         </div>
