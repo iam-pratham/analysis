@@ -165,7 +165,7 @@ export default function ProviderPage() {
                 const patName = (c.patientName || "").toLowerCase();
                 const insName = (c.insuranceCompany || "").toLowerCase();
                 const docName = (c.doctorName || "").toLowerCase();
-                const dos = format(parseDateSafe(c.serviceDate), "MM-dd-yyyy");
+                const dos = format(parseDateSafe(c.serviceDate), "MM/dd/yyyy");
                 return patName.includes(lower) || insName.includes(lower) || docName.includes(lower) || dos.includes(lower);
             });
         }
@@ -474,7 +474,7 @@ export default function ProviderPage() {
                                     {paginatedModalClaims.map((claim) => (
                                         <TableRow key={claim.id} className="hover:bg-primary/[0.03] transition-colors border-b border-border/50">
                                             <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
-                                                {format(parseDateSafe(claim.serviceDate), "MM-dd-yyyy")}
+                                                {format(parseDateSafe(claim.serviceDate), "MM/dd/yyyy")}
                                             </TableCell>
                                             <TableCell className="whitespace-nowrap text-xs font-bold py-4">
                                                 {claim.patientName}
