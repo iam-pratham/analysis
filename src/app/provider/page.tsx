@@ -74,7 +74,7 @@ export default function ProviderPage() {
         }
     }, [selectedCategory])
 
-    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalArb, totalLop, totalNoOon, totalChiro, totalPT, totalOT, totalPaidAwaiting } = useMemo(() => {
+    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalArb, totalLop, totalNoOon, totalChiro, totalPT, totalOT } = useMemo(() => {
         const pMap: Record<string, number> = {}
         let tBilled = 0
         let tPaid = 0
@@ -85,7 +85,6 @@ export default function ProviderPage() {
         let tChiro = 0
         let tPT = 0
         let tOT = 0
-        let tPaidAwaiting = 0
 
         filteredClaims.forEach(c => {
             const statusStr = String(c.claimStatus || (c as any).report || '').toLowerCase();
@@ -117,12 +116,9 @@ export default function ProviderPage() {
                 (statusStr.includes("no oon benefit") && statusStr.includes("lop")) ||
                 (statusStr.includes("no oon benefit") && (statusStr.includes("pt") || statusStr.includes("patient")))
             )
-            const isPaidAwaiting = statusStr.includes("paid-awaiting payment") || statusStr.includes("paid - awaiting payment") || statusStr.includes("awaiting payment")
-
             if (isArbMatch) tArb++
             if (isLopMatch) tLop++
             if (isNoOonMatch) tNoOon++
-            if (isPaidAwaiting) tPaidAwaiting++
 
             // Categorization based on pre-processed suffixes in data context
             const isChiro = name.includes(' - Chiro');
@@ -143,8 +139,7 @@ export default function ProviderPage() {
             totalNoOon: tNoOon,
             totalChiro: tChiro,
             totalPT: tPT,
-            totalOT: tOT,
-            totalPaidAwaiting: tPaidAwaiting
+            totalOT: tOT
         }
     }, [filteredClaims])
 
@@ -356,20 +351,6 @@ export default function ProviderPage() {
                                     {totalNoOon.toLocaleString()}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">Benefit Exhausted / No OON</p>
-                            </CardContent>
-                        </Card>
-                        <Card 
-                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
-                            onClick={() => setSelectedCategory("Paid - Awaiting Payment")}
-                        >
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-emerald-600">Paid - Awaiting Payment</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-emerald-500">
-                                    {(totalPaidAwaiting || 0).toLocaleString()}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">Funds pending disbursement</p>
                             </CardContent>
                         </Card>
                     </motion.div>
