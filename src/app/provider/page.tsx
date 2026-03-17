@@ -6,7 +6,24 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Cell } from "recharts"
 import { GlobalFilters } from "@/components/global-filters"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
+import { 
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Button } from "@/components/ui/button"
+import { format } from "date-fns"
 import { motion } from "framer-motion"
+
+const parseDateSafe = (dateStr: any) => {
+    if (!dateStr) return new Date()
+    if (typeof dateStr === 'string' && dateStr.includes('-') && !dateStr.includes('T')) {
+        return new Date(dateStr + 'T00:00:00')
+    }
+    return new Date(dateStr)
+}
 
 const volumeConfig = {
     claims: {
@@ -30,6 +47,17 @@ const itemVariants = {
 
 export default function ProviderPage() {
     const { filteredClaims, claims } = useData()
+    const [selectedCategory, setSelectedCategory] = React.useState<string | null>(null)
+    const [displayCategory, setDisplayCategory] = React.useState<string | null>(null)
+    const [modalPage, setModalPage] = React.useState(1)
+    const modalRowsPerPage = 50
+
+    // Synchronize display category but don't clear it immediately on close
+    React.useEffect(() => {
+        if (selectedCategory) {
+            setDisplayCategory(selectedCategory)
+        }
+    }, [selectedCategory])
 
     const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalArb, totalLop, totalNoOon, totalChiro, totalPT, totalOT } = useMemo(() => {
         const pMap: Record<string, number> = {}
@@ -115,6 +143,25 @@ export default function ProviderPage() {
     }, [filteredClaims])
 
     const totalCptUsages = useMemo(() => cptData.reduce((acc, curr) => acc + curr.usage, 0), [cptData])
+
+    const activeClaimsForModal = useMemo(() => {
+        const target = selectedCategory || displayCategory
+        if (!target) return []
+        
+        return filteredClaims.filter(c => {
+            const name = c.doctorName || ""
+            if (target === "Chiro") return name.includes(" - Chiro")
+            if (target === "PT") return name.includes(" - PT")
+            if (target === "OT") return name.includes(" - OT")
+            return false
+        })
+    }, [filteredClaims, selectedCategory, displayCategory])
+
+    const paginatedModalClaims = useMemo(() => {
+        return activeClaimsForModal.slice((modalPage - 1) * modalRowsPerPage, modalPage * modalRowsPerPage)
+    }, [activeClaimsForModal, modalPage])
+
+    const modalTotalPages = Math.ceil(activeClaimsForModal.length / modalRowsPerPage)
 
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
@@ -202,37 +249,46 @@ export default function ProviderPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
-                        <Card className="flex flex-col justify-center h-full">
+                        <Card 
+                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
+                            onClick={() => setSelectedCategory("Chiro")}
+                        >
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Chiro Claims</CardTitle>
+                                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-tight">Chiro Claims</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-[var(--color-chart-1)]">
-                                    {totalChiro}
+                                    {totalChiro.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Assigned provider</p>
+                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
                             </CardContent>
                         </Card>
-                        <Card className="flex flex-col justify-center h-full">
+                        <Card 
+                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
+                            onClick={() => setSelectedCategory("PT")}
+                        >
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">PT Claims</CardTitle>
+                                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-tight">PT Claims</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-[var(--color-chart-2)]">
-                                    {totalPT}
+                                    {totalPT.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Assigned provider</p>
+                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
                             </CardContent>
                         </Card>
-                        <Card className="flex flex-col justify-center h-full">
+                        <Card 
+                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
+                            onClick={() => setSelectedCategory("OT")}
+                        >
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">OT Claims</CardTitle>
+                                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-tight">OT Claims</CardTitle>
                             </CardHeader>
                             <CardContent>
                                 <div className="text-2xl font-bold text-[var(--color-chart-4)]">
-                                    {totalOT}
+                                    {totalOT.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Assigned provider</p>
+                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -343,6 +399,126 @@ export default function ProviderPage() {
                     </Card>
                 </motion.div>
             </motion.div>
+
+            {/* Claims Detail Modal */}
+            <Dialog 
+                open={!!selectedCategory} 
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setSelectedCategory(null)
+                        setTimeout(() => setModalPage(1), 300)
+                    }
+                }}
+            >
+                <DialogContent className="sm:max-w-[96vw] w-[96vw] max-h-[94vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl transition-opacity duration-300">
+                    <DialogHeader className="p-6 pb-4 border-b border-border shrink-0 bg-background/50 backdrop-blur-md">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                            <div>
+                                <DialogTitle className="text-2xl font-black flex items-center gap-3">
+                                    <span className="bg-primary text-primary-foreground px-3 py-1 rounded-lg text-lg uppercase tracking-tighter">
+                                        {selectedCategory || displayCategory}
+                                    </span>
+                                    <span>Claims Detail</span>
+                                    <span className="text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-full border border-border">
+                                        {activeClaimsForModal.length} RECORDS
+                                    </span>
+                                </DialogTitle>
+                            </div>
+                        </div>
+                    </DialogHeader>
+                    
+                    <div className="flex-1 overflow-x-auto overflow-y-auto min-h-0 bg-muted/10">
+                        <div className="min-w-max w-full">
+                            <Table className="relative w-full border-collapse">
+                                <TableHeader className="sticky top-0 bg-background/95 backdrop-blur-md z-30 shadow-sm border-b border-border">
+                                    <TableRow className="hover:bg-transparent border-none">
+                                        <TableHead className="w-[140px] py-4 pl-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Service Date</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Patient Name</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Insurance & Payer</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Attending Physician</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">CPT Codes</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Billed Amount</TableHead>
+                                        <TableHead className="py-4 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Paid Amount</TableHead>
+                                        <TableHead className="py-4 pr-6 text-[10px] font-black uppercase tracking-widest text-muted-foreground">Detailed Claim Status</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {paginatedModalClaims.map((claim) => (
+                                        <TableRow key={claim.id} className="hover:bg-primary/[0.03] transition-colors border-b border-border/50">
+                                            <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
+                                                {format(parseDateSafe(claim.serviceDate), "MM-dd-yyyy")}
+                                            </TableCell>
+                                            <TableCell className="whitespace-nowrap text-xs font-bold py-4">
+                                                {claim.patientName}
+                                            </TableCell>
+                                            <TableCell className="text-xs py-4">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="font-bold text-foreground line-clamp-1">{claim.insuranceCompany}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">{claim.insuranceType}</span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-xs py-4">
+                                                <div className="flex flex-col gap-0.5">
+                                                    <span className="font-bold text-foreground line-clamp-1">{claim.doctorName?.split(' - ')[0] || "N/A"}</span>
+                                                    <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
+                                                        {claim.doctorName?.includes(' - Chiro') ? 'Chiro' : 
+                                                         claim.doctorName?.includes(' - PT') ? 'PT' : 
+                                                         claim.doctorName?.includes(' - OT') ? 'OT' : 'N/A'}
+                                                    </span>
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-xs font-mono text-muted-foreground py-4">
+                                                {claim.cptCode}
+                                            </TableCell>
+                                            <TableCell className="text-xs font-bold py-4">
+                                                ${claim.billedAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </TableCell>
+                                            <TableCell className="text-xs font-black text-green-600 py-4">
+                                                ${claim.paidAmt?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                            </TableCell>
+                                            <TableCell className="py-4 pr-6">
+                                                <span className="text-[10px] font-bold text-zinc-600 bg-zinc-100 px-2 py-1 rounded inline-block max-w-[280px] break-words uppercase leading-tight">
+                                                    {claim.claimStatus}
+                                                </span>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </div>
+                    </div>
+
+                    <div className="p-4 border-t border-border/50 flex items-center justify-between bg-background shrink-0">
+                        <p className="text-xs text-muted-foreground font-medium">
+                            Showing <span className="text-foreground">{(modalPage - 1) * modalRowsPerPage + 1}</span> to <span className="text-foreground">{Math.min(modalPage * modalRowsPerPage, activeClaimsForModal.length)}</span> of {activeClaimsForModal.length}
+                        </p>
+                        <div className="flex items-center gap-2">
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 text-xs font-bold"
+                                onClick={() => setModalPage(p => Math.max(1, p - 1))}
+                                disabled={modalPage === 1}
+                            >
+                                Previous
+                            </Button>
+                            <div className="flex items-center gap-1 mx-2">
+                                <span className="text-xs font-bold">Page {modalPage}</span>
+                                <span className="text-xs text-muted-foreground">of {modalTotalPages}</span>
+                            </div>
+                            <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-8 text-xs font-bold"
+                                onClick={() => setModalPage(p => Math.min(modalTotalPages, p + 1))}
+                                disabled={modalPage === modalTotalPages}
+                            >
+                                Next
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }
