@@ -350,7 +350,7 @@ export default function ProviderPage() {
                                 <div className="text-2xl font-bold text-orange-400">
                                     {totalNoOon.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1">Non-covered OON services</p>
+                                <p className="text-xs text-muted-foreground mt-1">Non-covered OON</p>
                             </CardContent>
                         </Card>
                     </motion.div>
