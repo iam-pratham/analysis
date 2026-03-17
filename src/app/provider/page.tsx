@@ -439,7 +439,7 @@ export default function ProviderPage() {
                     }
                 }}
             >
-                <DialogContent className="sm:max-w-[96vw] w-[96vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl transition-opacity duration-300">
+                <DialogContent className="sm:max-w-[96vw] w-[96vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl transition-all duration-300 ease-in-out">
                     <DialogHeader className="p-6 pb-4 border-b border-border shrink-0 bg-background/50 backdrop-blur-md">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
@@ -457,7 +457,7 @@ export default function ProviderPage() {
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                 <Input 
                                     placeholder="Search patient, DOS, provider" 
-                                    className="pl-9 h-10 w-full bg-background/50 border-border focus:ring-primary/20 transition-all font-medium text-sm"
+                                    className="pl-9 h-10 w-full bg-background/50 border-border focus:border-border focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 transition-all font-medium text-sm outline-none"
                                     value={searchTerm}
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
