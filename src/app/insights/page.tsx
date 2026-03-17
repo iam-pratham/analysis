@@ -71,6 +71,11 @@ const STATUS_THEMES: Record<string, {
         color: "text-green-600",
         match: (s) => s === "paid correctly" || s.startsWith("paid correctly"),
     },
+    "Paid - Awaiting Payment": {
+        icon: Clock,
+        color: "text-emerald-500",
+        match: (s) => s.includes("paid-awaiting payment") || s.includes("paid - awaiting payment") || s.includes("awaiting payment"),
+    },
     "Patient Responsibility": {
         icon: Stethoscope,
         color: "text-sky-500",
