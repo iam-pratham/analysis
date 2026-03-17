@@ -19,25 +19,27 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { format } from "date-fns"
 import { 
-    CheckCircle2, 
-    Stethoscope, 
-    AlertTriangle, 
-    Gavel, 
-    Clock, 
-    ShieldAlert, 
-    Layers, 
-    Ban, 
-    UserCheck, 
-    FileWarning, 
-    CalendarClock, 
-    Activity, 
-    ZapOff, 
-    XOctagon, 
-    CreditCard, 
+    CheckCircle2,
+    Stethoscope,
+    AlertTriangle,
+    Gavel,
+    Clock,
+    ShieldAlert,
+    Layers,
+    Ban,
+    UserCheck,
+    FileWarning,
+    CalendarClock,
+    Activity,
+    ZapOff,
+    XOctagon,
+    CreditCard,
     RefreshCw,
-    Info
+    Info,
+    Search
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 
 const parseDateSafe = (dateStr: any) => {
     if (!dateStr) return new Date()
@@ -164,6 +166,7 @@ export default function ReportsPage() {
     const [selectedBucket, setSelectedBucket] = React.useState<string | null>(null)
     const [displayBucket, setDisplayBucket] = React.useState<string | null>(null)
     const [modalPage, setModalPage] = React.useState(1)
+    const [searchTerm, setSearchTerm] = React.useState("")
     const modalRowsPerPage = 50
 
     // Synchronize display bucket but don't clear it immediately on close
@@ -206,8 +209,20 @@ export default function ReportsPage() {
     const activeClaimsForModal = useMemo(() => {
         const target = selectedBucket || displayBucket
         if (!target) return []
-        return filteredClaims.filter(c => getBucket(c.claimStatus) === target)
-    }, [filteredClaims, selectedBucket, displayBucket])
+        let list = filteredClaims.filter(c => getBucket(c.claimStatus) === target)
+
+        if (searchTerm) {
+            const lower = searchTerm.toLowerCase();
+            list = list.filter(c => {
+                const patName = (c.patientName || "").toLowerCase();
+                const insName = (c.insuranceCompany || "").toLowerCase();
+                const docName = (c.doctorName || "").toLowerCase();
+                const dos = format(parseDateSafe(c.serviceDate), "MM-dd-yyyy");
+                return patName.includes(lower) || insName.includes(lower) || docName.includes(lower) || dos.includes(lower);
+            });
+        }
+        return list;
+    }, [filteredClaims, selectedBucket, displayBucket, searchTerm])
 
     const paginatedModalClaims = useMemo(() => {
         return activeClaimsForModal.slice((modalPage - 1) * modalRowsPerPage, modalPage * modalRowsPerPage)
@@ -341,6 +356,7 @@ export default function ReportsPage() {
                 onOpenChange={(open) => {
                     if (!open) {
                         setSelectedBucket(null)
+                        setSearchTerm("")
                         // Reset page after a short delay so user doesn't see it jump
                         setTimeout(() => setModalPage(1), 300)
                     }
@@ -359,6 +375,18 @@ export default function ReportsPage() {
                                         {activeClaimsForModal.length} RECORDS
                                     </span>
                                 </DialogTitle>
+                            </div>
+                            <div className="relative w-full sm:w-72">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input 
+                                    placeholder="Search patient, insurance, doctor..." 
+                                    className="pl-9 h-10 w-full bg-background/50 border-border focus:ring-primary/20 transition-all font-medium text-sm"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setModalPage(1);
+                                    }}
+                                />
                             </div>
                         </div>
                     </DialogHeader>

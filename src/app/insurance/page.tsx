@@ -14,7 +14,9 @@ import {
 } from "@/components/ui/dialog"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { format } from "date-fns"
+import { Search } from "lucide-react"
 import { motion } from "framer-motion"
 
 const parseDateSafe = (dateStr: any) => {
@@ -59,6 +61,7 @@ export default function InsuranceAnalysisPage() {
     const [selectedInsurance, setSelectedInsurance] = React.useState<string | null>(null)
     const [displayInsurance, setDisplayInsurance] = React.useState<string | null>(null)
     const [modalPage, setModalPage] = React.useState(1)
+    const [searchTerm, setSearchTerm] = React.useState("")
     const modalRowsPerPage = 50
 
     // Synchronize display insurance but don't clear it immediately on close
@@ -104,11 +107,23 @@ export default function InsuranceAnalysisPage() {
         const target = selectedInsurance || displayInsurance
         if (!target) return []
         
-        return filteredClaims.filter(c => {
+        let list = filteredClaims.filter(c => {
             const comp = String(c.insuranceCompany || c.insuranceType)
             return comp === target
         })
-    }, [filteredClaims, selectedInsurance, displayInsurance])
+
+        if (searchTerm) {
+            const lower = searchTerm.toLowerCase();
+            list = list.filter(c => {
+                const patName = (c.patientName || "").toLowerCase();
+                const insName = (c.insuranceCompany || "").toLowerCase();
+                const docName = (c.doctorName || "").toLowerCase();
+                const dos = format(parseDateSafe(c.serviceDate), "MM-dd-yyyy");
+                return patName.includes(lower) || insName.includes(lower) || docName.includes(lower) || dos.includes(lower);
+            });
+        }
+        return list;
+    }, [filteredClaims, selectedInsurance, displayInsurance, searchTerm])
 
     const paginatedModalClaims = useMemo(() => {
         return activeClaimsForModal.slice((modalPage - 1) * modalRowsPerPage, modalPage * modalRowsPerPage)
@@ -308,6 +323,7 @@ export default function InsuranceAnalysisPage() {
                 onOpenChange={(open) => {
                     if (!open) {
                         setSelectedInsurance(null)
+                        setSearchTerm("")
                         setTimeout(() => setModalPage(1), 300)
                     }
                 }}
@@ -325,6 +341,18 @@ export default function InsuranceAnalysisPage() {
                                         {activeClaimsForModal.length} RECORDS
                                     </span>
                                 </DialogTitle>
+                            </div>
+                            <div className="relative w-full sm:w-72">
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input 
+                                    placeholder="Search patient, insurance, doctor..." 
+                                    className="pl-9 h-10 w-full bg-background/50 border-border focus:ring-primary/20 transition-all font-medium text-sm"
+                                    value={searchTerm}
+                                    onChange={(e) => {
+                                        setSearchTerm(e.target.value);
+                                        setModalPage(1);
+                                    }}
+                                />
                             </div>
                         </div>
                     </DialogHeader>
