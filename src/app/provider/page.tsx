@@ -439,7 +439,7 @@ export default function ProviderPage() {
                     }
                 }}
             >
-                <DialogContent className="sm:max-w-[96vw] w-[96vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl transition-all duration-300 ease-in-out">
+                <DialogContent className="sm:max-w-[96vw] w-[96vw] h-[90vh] flex flex-col p-0 gap-0 overflow-hidden border-none shadow-2xl">
                     <DialogHeader className="p-6 pb-4 border-b border-border shrink-0 bg-background/50 backdrop-blur-md">
                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                             <div>
