@@ -286,11 +286,11 @@ export default function DashboardPage() {
                   <div className="flex-1 w-full min-h-[350px]">
                     <ChartContainer config={chartConfig} className="w-full h-full">
                       <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={monthlyData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+                        <BarChart data={monthlyData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                           <defs>
-                            <linearGradient id="areaColor" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="5%" stopColor="var(--color-primary)" stopOpacity={0.2} />
-                              <stop offset="95%" stopColor="var(--color-primary)" stopOpacity={0} />
+                            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={1} />
+                              <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0.4} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
@@ -308,18 +308,28 @@ export default function DashboardPage() {
                           />
                           <RechartsTooltip
                             content={<ChartTooltipContent className="bg-background/95 backdrop-blur-xl border border-border/50 shadow-sm rounded-xl p-3" />}
-                            cursor={{ stroke: 'var(--color-primary)', strokeWidth: 1, strokeDasharray: '4 4', fill: 'transparent' }}
+                            cursor={{ fill: 'var(--color-primary)', opacity: 0.05 }}
                           />
-                          <Area
-                            type="monotone"
+                          <Bar
                             dataKey="value"
-                            stroke="var(--color-primary)"
-                            strokeWidth={2}
-                            fillOpacity={1}
-                            fill="url(#areaColor)"
+                            fill="url(#barGradient)"
+                            radius={[4, 4, 0, 0]}
+                            maxBarSize={45}
                             animationDuration={1500}
-                          />
-                        </AreaChart>
+                          >
+                            {monthlyData.map((_, i) => (
+                              <Cell key={i} fill={`var(--color-chart-${(i % 5) + 1})`} fillOpacity={0.9} />
+                            ))}
+                            <LabelList
+                              dataKey="value"
+                              position="top"
+                              offset={8}
+                              style={{ fill: 'var(--color-foreground)', fontWeight: 600 }}
+                              fontSize={11}
+                              formatter={(val: number) => val.toLocaleString()}
+                            />
+                          </Bar>
+                        </BarChart>
                       </ResponsiveContainer>
                     </ChartContainer>
                   </div>
