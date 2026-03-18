@@ -5,7 +5,7 @@ import { useData } from "@/context/data-context"
 import { useRouter } from "next/navigation"
 import { GlobalFilters } from "@/components/global-filters"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, Cell, LabelList } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, Cell, LabelList, LineChart, Line } from "recharts"
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from "@/components/ui/chart"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
@@ -286,11 +286,12 @@ export default function DashboardPage() {
                   <div className="flex-1 w-full min-h-[350px]">
                     <ChartContainer config={chartConfig} className="w-full h-full">
                       <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={monthlyData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+                        <LineChart data={monthlyData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                           <defs>
-                            <linearGradient id="barGradient" x1="0" y1="0" x2="0" y2="1">
-                              <stop offset="0%" stopColor="var(--color-primary)" stopOpacity={1} />
-                              <stop offset="100%" stopColor="var(--color-primary)" stopOpacity={0.4} />
+                            <linearGradient id="colorLineGradient" x1="0" y1="0" x2="1" y2="0">
+                              <stop offset="0%" stopColor="var(--color-chart-1)" />
+                              <stop offset="50%" stopColor="var(--color-chart-2)" />
+                              <stop offset="100%" stopColor="var(--color-chart-5)" />
                             </linearGradient>
                           </defs>
                           <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
@@ -308,28 +309,18 @@ export default function DashboardPage() {
                           />
                           <RechartsTooltip
                             content={<ChartTooltipContent className="bg-background/95 backdrop-blur-xl border border-border/50 shadow-sm rounded-xl p-3" />}
-                            cursor={{ fill: 'var(--color-primary)', opacity: 0.05 }}
+                            cursor={{ fill: 'transparent', stroke: 'var(--color-primary)', strokeWidth: 1, strokeDasharray: '4 4' }}
                           />
-                          <Bar
+                          <Line
+                            type="monotone"
                             dataKey="value"
-                            fill="url(#barGradient)"
-                            radius={[4, 4, 0, 0]}
-                            maxBarSize={45}
+                            stroke="url(#colorLineGradient)"
+                            strokeWidth={4}
+                            dot={{ fill: "var(--color-background)", stroke: "var(--color-chart-2)", strokeWidth: 2, r: 4 }}
+                            activeDot={{ r: 6, fill: "var(--color-chart-5)", stroke: "var(--color-background)", strokeWidth: 2 }}
                             animationDuration={1500}
-                          >
-                            {monthlyData.map((_, i) => (
-                              <Cell key={i} fill={`var(--color-chart-${(i % 5) + 1})`} fillOpacity={0.9} />
-                            ))}
-                            <LabelList
-                              dataKey="value"
-                              position="top"
-                              offset={8}
-                              style={{ fill: 'var(--color-foreground)', fontWeight: 600 }}
-                              fontSize={11}
-                              formatter={(val: number) => val.toLocaleString()}
-                            />
-                          </Bar>
-                        </BarChart>
+                          />
+                        </LineChart>
                       </ResponsiveContainer>
                     </ChartContainer>
                   </div>
