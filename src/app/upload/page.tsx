@@ -263,7 +263,7 @@ export default function UploadPage() {
         <div className="p-6 max-w-4xl mx-auto mt-10">
             <Card className="shadow-lg border-0 bg-card">
                 <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-3xl font-bold tracking-tight">2025 - Chiro / PT / OT - Upload Medical Claims</CardTitle>
+                    <CardTitle className="text-3xl font-bold tracking-tight">2025 - Chiro / PT / OT - Upload Data</CardTitle>
                     <CardDescription className="text-lg mt-2">
                         Upload your Excel spreadsheet (.xlsx, .xls) or CSV file containing claim-level data.
                     </CardDescription>

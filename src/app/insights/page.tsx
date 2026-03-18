@@ -57,7 +57,7 @@ const containerVariants = {
 
 const itemVariants = {
     hidden: { opacity: 0, y: 20 },
-    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 } }
+    show: { opacity: 1, y: 0, transition: { type: "spring" as const, stiffness: 300, damping: 24 }, transitionEnd: { transform: "none", "-webkit-transform": "none" } }
 }
 
 // ── Status → Category mapping (enhanced with themes and icons) ─────────────
@@ -251,7 +251,7 @@ export default function ReportsPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                April thru December 2025 - Chiro / PT / OT Reports
+                Chiro / PT / OT - Status Breakdown
             </h1>
 
             <GlobalFilters />
@@ -535,10 +535,10 @@ export default function ReportsPage() {
                         <CardDescription>Distribution of claims across all status categories</CardDescription>
                     </CardHeader>
                     <CardContent className="pb-2">
-                        <ChartContainer config={chartConfig} className="min-h-[350px] w-full">
+                        <ChartContainer config={chartConfig} className="min-h-[450px] w-full">
                             <BarChart
                                 data={chartData}
-                                margin={{ top: 20, right: 30, left: 0, bottom: 20 }}
+                                margin={{ top: 50, right: 30, left: 0, bottom: 20 }}
                             >
                                 <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.1} />
                                 <XAxis
@@ -546,20 +546,10 @@ export default function ReportsPage() {
                                     tickLine={false}
                                     axisLine={false}
                                     interval={0}
-                                    height={50}
-                                    tick={(props: any) => {
-                                        const { x, y, payload } = props
-                                        const words = (payload.value as string).split(" ")
-                                        const mid = Math.ceil(words.length / 2)
-                                        const line1 = words.slice(0, mid).join(" ")
-                                        const line2 = words.slice(mid).join(" ")
-                                        return (
-                                            <g transform={`translate(${x},${y})`}>
-                                                <text x={0} y={0} dy={16} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize={10} fontWeight={600} className="uppercase tracking-tighter">{line1}</text>
-                                                {line2 && <text x={0} y={0} dy={28} textAnchor="middle" fill="var(--color-muted-foreground)" fontSize={10} fontWeight={600} className="uppercase tracking-tighter">{line2}</text>}
-                                            </g>
-                                        )
-                                    }}
+                                    angle={-45}
+                                    textAnchor="end"
+                                    height={130}
+                                    tick={{ fill: "var(--color-muted-foreground)", fontSize: 10, fontWeight: 600 }}
                                 />
                                 <YAxis tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)", fontSize: "11px", fontWeight: 500 }} />
                                 <ChartTooltip cursor={{ fill: "var(--color-primary)", opacity: 0.05 }} content={<ChartTooltipContent />} />

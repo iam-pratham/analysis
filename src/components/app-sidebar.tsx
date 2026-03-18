@@ -27,12 +27,12 @@ import { motion, AnimatePresence } from "framer-motion"
 import { useData } from "@/context/data-context"
 
 const items = [
-    { title: "Upload Data", url: "/upload", icon: UploadCloud },
-    { title: "Claims Analysis", url: "/", icon: LayoutDashboard },
-    { title: "Provider Analysis", url: "/provider", icon: Users },
-    { title: "CPT Metrics", url: "/cpt", icon: Activity },
-    { title: "Insurance Analysis", url: "/insurance", icon: ShieldPlus },
-    { title: "Reports", url: "/insights", icon: BrainCircuit },
+    { title: "Data Import", url: "/upload", icon: UploadCloud },
+    { title: "Claims Overview", url: "/", icon: LayoutDashboard },
+    { title: "Provider Performance", url: "/provider", icon: Users },
+    { title: "CPT Trends", url: "/cpt", icon: Activity },
+    { title: "Payer Portfolio", url: "/insurance", icon: ShieldPlus },
+    { title: "Status Breakdown", url: "/insights", icon: BrainCircuit },
     { title: "Raw Data", url: "/reports", icon: FileBarChart },
 ]
 

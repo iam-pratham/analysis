@@ -27,6 +27,7 @@ export interface FilterState {
     doctor: string | null;
     insuranceType: string | null;
     cptCode: string | null;
+    month: string | null;
     dateStart: Date | null;
     dateEnd: Date | null;
 }
@@ -51,6 +52,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
         doctor: null,
         insuranceType: null,
         cptCode: null,
+        month: null,
         dateStart: null,
         dateEnd: null,
     });
@@ -134,6 +136,16 @@ export function DataProvider({ children }: { children: ReactNode }) {
             if (filters.cptCode && !claim.cptCode.includes(filters.cptCode)) return false;
             if (filters.dateStart && claim.serviceDate < filters.dateStart) return false;
             if (filters.dateEnd && claim.serviceDate > filters.dateEnd) return false;
+            if (filters.month) {
+                if (!claim.serviceDate) return false;
+                const d = new Date(claim.serviceDate);
+                if (!isNaN(d.getTime())) {
+                    const monthKey = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                    if (monthKey !== filters.month) return false;
+                } else {
+                    return false;
+                }
+            }
             return true;
         });
     }, [claims, filters]);
