@@ -286,12 +286,16 @@ export default function DashboardPage() {
                   <div className="flex-1 w-full min-h-[350px]">
                     <ChartContainer config={chartConfig} className="w-full h-full">
                       <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={monthlyData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
+                        <AreaChart data={monthlyData} margin={{ top: 20, right: 20, left: -20, bottom: 0 }}>
                           <defs>
                             <linearGradient id="colorLineGradient" x1="0" y1="0" x2="1" y2="0">
                               <stop offset="0%" stopColor="var(--color-chart-1)" />
                               <stop offset="50%" stopColor="var(--color-chart-2)" />
                               <stop offset="100%" stopColor="var(--color-chart-5)" />
+                            </linearGradient>
+                            <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="5%" stopColor="var(--color-chart-2)" stopOpacity={0.4} />
+                              <stop offset="95%" stopColor="var(--color-chart-2)" stopOpacity={0} />
                             </linearGradient>
                           </defs>
                           <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
@@ -309,18 +313,20 @@ export default function DashboardPage() {
                           />
                           <RechartsTooltip
                             content={<ChartTooltipContent className="bg-background/95 backdrop-blur-xl border border-border/50 shadow-sm rounded-xl p-3" />}
-                            cursor={{ fill: 'transparent', stroke: 'var(--color-primary)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                            cursor={{ stroke: 'var(--color-primary)', strokeWidth: 1, strokeDasharray: '4 4', fill: 'transparent' }}
                           />
-                          <Line
+                          <Area
                             type="monotone"
                             dataKey="value"
                             stroke="url(#colorLineGradient)"
                             strokeWidth={4}
+                            fillOpacity={1}
+                            fill="url(#areaGradient)"
                             dot={{ fill: "var(--color-background)", stroke: "var(--color-chart-2)", strokeWidth: 2, r: 4 }}
                             activeDot={{ r: 6, fill: "var(--color-chart-5)", stroke: "var(--color-background)", strokeWidth: 2 }}
                             animationDuration={1500}
                           />
-                        </LineChart>
+                        </AreaChart>
                       </ResponsiveContainer>
                     </ChartContainer>
                   </div>
