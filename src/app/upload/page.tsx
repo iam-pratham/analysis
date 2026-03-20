@@ -169,6 +169,11 @@ export default function UploadPage() {
                 const billedAmt = parseFloat(String(billedAmtRaw).replace(/[^0-9.-]/g, '')) || 0
                 const paidAmt = 0 
 
+                // Build granular CPT details
+                const rowCpts = String(cptCode || "N/A").split(',').map(c => c.trim()).filter(c => c && c !== "N/A")
+                if (rowCpts.length === 0) rowCpts.push("Unknown");
+                const rowDetails = rowCpts.map(c => ({ cpt: c.toUpperCase(), billed: billedAmt / rowCpts.length, paid: 0 }))
+
                 if (groupedClaimsMap.has(uniqueId)) {
                     const existing = groupedClaimsMap.get(uniqueId)!
                     const existingCpts = existing.cptCode.split(',').map(c => c.trim()).filter(c => c && c !== "N/A")
@@ -177,6 +182,9 @@ export default function UploadPage() {
                     existing.cptCode = existingCpts.join(", ") || "N/A"
                     existing.billedAmt = (existing.billedAmt || 0) + billedAmt
                     existing.paidAmt = (existing.paidAmt || 0) + paidAmt
+                    
+                    if (!existing.cptDetails) existing.cptDetails = [];
+                    existing.cptDetails = [...existing.cptDetails, ...rowDetails];
 
                     const statusPriority = (s: string) => {
                         const low = s.toLowerCase()
@@ -210,6 +218,7 @@ export default function UploadPage() {
                         claimSentDate,
                         billedAmt,
                         paidAmt,
+                        cptDetails: [...rowDetails],
                         claimStatus: stdStatus,
                         paymentStatus: stdStatus,
                         arbFlag: isArb,
@@ -306,6 +315,25 @@ export default function UploadPage() {
 
                 if (matchIndex !== -1) {
                     updatedClaims[matchIndex].paidAmt = (updatedClaims[matchIndex].paidAmt || 0) + total;
+                    if (!updatedClaims[matchIndex].cptDetails) updatedClaims[matchIndex].cptDetails = [];
+                    
+                    // Route the payment dynamically to the matched CPT
+                    const exactDetail = updatedClaims[matchIndex].cptDetails!.find(d => d.cpt.toLowerCase() === cptStr);
+                    if (exactDetail) {
+                        exactDetail.paid += total;
+                    } else {
+                        // Ad-hoc insertion if CPT mismatched but Patient/DOS matched perfectly
+                        if (updatedClaims[matchIndex].cptDetails!.length > 0) {
+                            if (cptStr && cptStr.length > 0) {
+                                updatedClaims[matchIndex].cptDetails!.push({ cpt: cptStr.toUpperCase(), billed: 0, paid: total });
+                            } else {
+                                updatedClaims[matchIndex].cptDetails![0].paid += total;
+                            }
+                        } else {
+                            updatedClaims[matchIndex].cptDetails!.push({ cpt: cptStr ? cptStr.toUpperCase() : "Unknown", billed: 0, paid: total });
+                        }
+                    }
+                    
                     matchCount++;
                 }
             })

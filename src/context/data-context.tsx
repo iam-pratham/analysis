@@ -16,6 +16,7 @@ export interface Claim {
     claimSentDate?: Date | null;
     billedAmt?: number;
     paidAmt?: number;
+    cptDetails?: { cpt: string; billed: number; paid: number }[];
     claimStatus: string;
     paymentStatus: string;
     arbFlag: boolean;

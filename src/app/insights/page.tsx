@@ -173,6 +173,7 @@ export default function ReportsPage() {
     const [displayBucket, setDisplayBucket] = React.useState<string | null>(null)
     const [modalPage, setModalPage] = React.useState(1)
     const [searchTerm, setSearchTerm] = React.useState("")
+    const [expandedClaimId, setExpandedClaimId] = React.useState<string | null>(null)
     const [isPending, setIsPending] = React.useState(false)
     const modalRowsPerPage = 50
 
@@ -309,7 +310,12 @@ export default function ReportsPage() {
                         <motion.div key={bucket.label} variants={itemVariants} className="h-full">
                             <Card 
                                 className={`h-full cursor-pointer transition-all hover:ring-2 hover:ring-primary/20 ${count === 0 ? 'opacity-60 grayscale-[0.5]' : ''}`}
-                                onClick={() => count > 0 && setSelectedBucket(bucket.label)}
+                                onClick={() => {
+                                    if (count > 0) {
+                                        setSelectedBucket(bucket.label);
+                                        setExpandedClaimId(null);
+                                    }
+                                }}
                             >
                                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                     <CardTitle className="text-sm font-medium">{bucket.label}</CardTitle>
@@ -342,7 +348,12 @@ export default function ReportsPage() {
                 <motion.div variants={itemVariants} className="h-full">
                     <Card 
                         className="h-full cursor-pointer transition-all hover:ring-2 hover:ring-primary/20"
-                        onClick={() => otherCount > 0 && setSelectedBucket("Other")}
+                        onClick={() => {
+                            if (otherCount > 0) {
+                                setSelectedBucket("Other");
+                                setExpandedClaimId(null);
+                            }
+                        }}
                     >
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium">Other / Uncategorized</CardTitle>
@@ -404,6 +415,7 @@ export default function ReportsPage() {
                                     onChange={(e) => {
                                         setSearchTerm(e.target.value);
                                         setModalPage(1);
+                                        setExpandedClaimId(null);
                                     }}
                                 />
                                 {isPending && (
@@ -447,11 +459,12 @@ export default function ReportsPage() {
                                             </TableRow>
                                         ) : (
                                             paginatedModalClaims.map((claim) => (
+                                                <React.Fragment key={claim.id}>
                                                 <motion.tr 
-                                                    key={claim.id} 
                                                     initial={{ opacity: 0, y: 4 }}
                                                     animate={{ opacity: 1, y: 0 }}
-                                                    className="hover:bg-primary/[0.03] transition-colors border-b border-border/50 group/row"
+                                                    className={`hover:bg-primary/[0.03] transition-colors border-b border-border/50 group/row cursor-pointer ${expandedClaimId === claim.id ? 'bg-primary/[0.05]' : ''}`}
+                                                    onClick={() => setExpandedClaimId(expandedClaimId === claim.id ? null : claim.id)}
                                                 >
                                                     <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
                                                         {format(parseDateSafe(claim.serviceDate), "MM/dd/yyyy")}
@@ -490,6 +503,45 @@ export default function ReportsPage() {
                                                         </span>
                                                     </TableCell>
                                                 </motion.tr>
+                                                {expandedClaimId === claim.id && claim.cptDetails && claim.cptDetails.length > 0 && (
+                                                    <TableRow className="bg-primary/[0.01] hover:bg-primary/[0.01]">
+                                                        <TableCell colSpan={8} className="p-0 border-b border-border/50">
+                                                            <motion.div 
+                                                                initial={{ height: 0, opacity: 0 }}
+                                                                animate={{ height: "auto", opacity: 1 }}
+                                                                exit={{ height: 0, opacity: 0 }}
+                                                                className="overflow-hidden"
+                                                            >
+                                                                <div className="pt-2 pb-6 px-4 md:px-8">
+                                                                    <div className="flex items-center gap-2 mb-3">
+                                                                        <div className="h-3 w-1 bg-primary rounded-full"></div>
+                                                                        <h4 className="font-bold text-xs uppercase tracking-widest text-muted-foreground">CPT Payment Breakdown</h4>
+                                                                    </div>
+                                                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+                                                                        {claim.cptDetails.map((cpt, i) => (
+                                                                            <div key={i} className="bg-card border shadow-sm rounded-lg p-3 flex flex-col gap-1 hover:border-primary/30 transition-colors">
+                                                                                <div className="flex justify-between items-center w-full">
+                                                                                    <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest bg-muted/60 px-2 py-0.5 rounded border">CPT: {cpt.cpt}</span>
+                                                                                </div>
+                                                                                <div className="flex justify-between items-end mt-2">
+                                                                                    <div className="flex flex-col">
+                                                                                        <span className="text-[9px] uppercase font-bold text-muted-foreground/70">Billed</span>
+                                                                                        <span className="text-xs font-semibold text-foreground">${cpt.billed?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                                                    </div>
+                                                                                    <div className="flex flex-col text-right">
+                                                                                        <span className="text-[9px] uppercase font-bold text-green-600/70">Paid</span>
+                                                                                        <span className="text-xs font-bold text-green-600">${cpt.paid?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            </motion.div>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                )}
+                                                </React.Fragment>
                                             ))
                                         )}
                                     </AnimatePresence>
