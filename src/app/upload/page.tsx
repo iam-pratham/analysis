@@ -6,8 +6,9 @@ import * as XLSX from "xlsx"
 import { useData, Claim } from "@/context/data-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileSpreadsheet, CheckCircle2, AlertCircle, Wand2 } from "lucide-react"
+import { FileSpreadsheet, CheckCircle2, AlertCircle, Wand2, ArrowRight } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { format } from "date-fns"
 
 function toTitleCase(str: string) {
     return str.toLowerCase().split(' ').map(function (word) {
@@ -16,84 +17,114 @@ function toTitleCase(str: string) {
 }
 
 export default function UploadPage() {
-    const { setClaims, setIsLoading } = useData()
+    const { claims, setClaims, setIsLoading } = useData()
     const router = useRouter()
+    
     const [error, setError] = useState<string | null>(null)
     const [success, setSuccess] = useState<string | null>(null)
+    const [paymentError, setPaymentError] = useState<string | null>(null)
+    const [paymentSuccess, setPaymentSuccess] = useState<string | null>(null)
 
-    const processWorkbook = (workbook: XLSX.WorkBook) => {
+    const getSortedName = (name: unknown) => {
+        if (!name) return "";
+        return String(name).toLowerCase()
+            // Ignore anything that isn't a strict alphabetical letter 
+            // This strips out all numbers, parentheses, like (1040310)
+            .replace(/[^a-z]/g, ' ')
+            .split(/\s+/)
+            .filter(p => p.length > 0)
+            .sort()
+            .join('');
+    }
+
+    const parseDateSafe = (raw: unknown) => {
+        if (!raw) return null
+        if (typeof raw === "number") {
+            const d = new Date(Math.round((raw - 25569) * 86400 * 1000))
+            return new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate());
+        }
+
+        if (typeof raw === "string") {
+            const str = raw.trim();
+            if (/^\d{6}$/.test(str)) {
+                const m = parseInt(str.substring(0, 2), 10);
+                const d = parseInt(str.substring(2, 4), 10);
+                let y = parseInt(str.substring(4, 6), 10);
+                y += (y < 50 ? 2000 : 1900);
+                return new Date(y, m - 1, d);
+            }
+            // Handle standard MM/DD/YYYY or YYYY-MM-DD
+            const parts = str.split(/[\/\-]/);
+            if (parts.length === 3) {
+                let p0 = parseInt(parts[0], 10);
+                let p1 = parseInt(parts[1], 10);
+                let p2 = parseInt(parts[2], 10);
+                
+                if (!isNaN(p0) && !isNaN(p1) && !isNaN(p2)) {
+                    // Check if format is YYYY-MM-DD
+                    if (p0 > 1000) {
+                        return new Date(p0, p1 - 1, p2);
+                    } else {
+                        // format is MM/DD/YYYY or MM/DD/YY
+                        let y = p2;
+                        if (parts[2].length === 2) {
+                            y += (y < 50 ? 2000 : 1900);
+                        }
+                        return new Date(y, p0 - 1, p1);
+                    }
+                }
+            }
+
+            const native = new Date(str);
+            if (!isNaN(native.getTime())) return native;
+        }
+
+        return null;
+    }
+
+    const getValRobust = (row: Record<string, unknown>, possibleKeys: string[]) => {
+        for (const pk of possibleKeys) {
+            const exactKey = Object.keys(row).find(k => k.toLowerCase().trim() === pk.toLowerCase().trim());
+            if (exactKey && row[exactKey] !== undefined && String(row[exactKey]).trim() !== "") {
+                return row[exactKey];
+            }
+        }
+        for (const pk of possibleKeys) {
+            const incKey = Object.keys(row).find(k => k.toLowerCase().includes(pk.toLowerCase()));
+            if (incKey && row[incKey] !== undefined && String(row[incKey]).trim() !== "") {
+                return row[incKey];
+            }
+        }
+        return "";
+    }
+
+    const processClaimsWorkbook = (workbook: XLSX.WorkBook) => {
         const groupedClaimsMap = new Map<string, Claim>()
 
         workbook.SheetNames.forEach((sheetName) => {
             const worksheet = workbook.Sheets[sheetName]
             const json = XLSX.utils.sheet_to_json(worksheet, {
                 defval: "",
-                raw: true
+                raw: false
             }) as Record<string, unknown>[]
 
             json.forEach((row, index) => {
-                const getVal = (possibleKeys: string[]) => {
-                    const keys = Object.keys(row).filter((k) =>
-                        possibleKeys.some((pk) => k.toLowerCase().includes(pk.toLowerCase()))
-                    )
-                    for (const k of keys) {
-                        const val = row[k]
-                        if (val !== undefined && val !== null && String(val).trim() !== "") return val
-                    }
-                    return keys.length > 0 ? row[keys[0]] : ""
-                }
-
-                const claimId = String(getVal(["claim id", "claim #", "claim number"]) || "")
-                const providerName = toTitleCase(String(getVal(["service location", "location", "service provider", "provider"]) || "").split(',')[0].trim())
-                const doctorName = toTitleCase(String(getVal(["attending physician", "attending", "doctor", "physician"]) || "").split(',')[0].trim())
-                const insuranceCompany = String(getVal(["insurance company", "company", "insurance name"]) || "")
-                const insuranceType = String(getVal(["insurance category", "category", "insurance type", "payer", "plan"]) || "")
-                const cptCode = String(getVal(["cpt codes", "cpt code", "cpt", "procedure", "hcpcs"]) || "")
-                const serviceDateRaw = getVal(["dos", "service date", "date", "service"])
-                const claimSentDateRaw = getVal(["claim date", "claim sent date", "claim sent", "sent date", "billed date"])
-                const billedAmtRaw = getVal(["billed amount", "billed amt", "billed", "charge", "charges"])
-                const paidAmtRaw = getVal(["total payments", "total payment", "paid amt", "paid amount", "payment", "paid"])
-                const claimStatus = getVal(["status", "claim status", "report", "deductible", "payment status"])
-                const arbFlagRaw = getVal(["arb", "arbitration"])
+                const claimId = String(getValRobust(row, ["claim id", "claim #", "claim number"]))
+                const providerName = toTitleCase(String(getValRobust(row, ["service location", "location", "service provider", "provider"])).split(',')[0].trim())
+                const doctorName = toTitleCase(String(getValRobust(row, ["attending physician", "attending", "doctor", "physician"])).split(',')[0].trim())
+                const insuranceCompany = String(getValRobust(row, ["insurance company", "company", "insurance name"]))
+                const insuranceType = String(getValRobust(row, ["insurance category", "category", "insurance type", "payer", "plan"]))
+                const cptCode = String(getValRobust(row, ["cpt codes", "cpt code", "cpt", "procedure", "hcpcs"]))
+                const serviceDateRaw = getValRobust(row, ["dos", "date of service", "service date"])
+                const claimSentDateRaw = getValRobust(row, ["claim date", "claim sent date", "claim sent", "sent date", "billed date"])
+                const billedAmtRaw = getValRobust(row, ["billed amount", "billed amt", "billed", "charge", "charges"])
+                const claimStatus = getValRobust(row, ["status", "claim status", "report", "deductible", "payment status"])
+                const arbFlagRaw = getValRobust(row, ["arb", "arbitration"])
 
                 if (!providerName && !doctorName && !cptCode && !claimId && !insuranceCompany) return
 
-                const parseDate = (raw: unknown) => {
-                    if (!raw) return null
-                    if (typeof raw === "number") return new Date(Math.round((raw - 25569) * 86400 * 1000))
-
-                    if (typeof raw === "string") {
-                        const str = raw.trim();
-                        // Handle 6-digit mmddyy
-                        if (/^\d{6}$/.test(str)) {
-                            const m = parseInt(str.substring(0, 2), 10);
-                            const d = parseInt(str.substring(2, 4), 10);
-                            let y = parseInt(str.substring(4, 6), 10);
-                            y += (y < 50 ? 2000 : 1900);
-                            return new Date(y, m - 1, d);
-                        }
-                        // Handle MM/DD/YY or MM/DD/YYYY or MM-DD-YY/YYYY
-                        const parts = str.split(/[\/\-]/);
-                        if (parts.length === 3) {
-                            let m = parseInt(parts[0], 10);
-                            let d = parseInt(parts[1], 10);
-                            let y = parseInt(parts[2], 10);
-
-                            if (!isNaN(m) && !isNaN(d) && !isNaN(y)) {
-                                if (parts[2].length === 2) {
-                                    y += (y < 50 ? 2000 : 1900);
-                                }
-                                return new Date(y, m - 1, d);
-                            }
-                        }
-                    }
-
-                    const d = new Date(raw as string);
-                    return isNaN(d.getTime()) ? null : d;
-                }
-
-                const serviceDate = parseDate(serviceDateRaw) || new Date()
-                const claimSentDate = parseDate(claimSentDateRaw)
+                const serviceDate = parseDateSafe(serviceDateRaw) || new Date()
+                const claimSentDate = parseDateSafe(claimSentDateRaw)
 
                 let isDeni = false
                 let foundPaid = false
@@ -107,9 +138,7 @@ export default function UploadPage() {
                 let stdStatus = String(claimStatus || "Unknown").trim()
                 const lowerStatus = stdStatus.toLowerCase();
 
-                // Only use the heuristic if there's no meaningful standard status
                 if (stdStatus === "Unknown" || stdStatus === "") {
-                    // try heuristics — use specific status names matching the Reports page exactly
                     let heuristicStatus = ""
                     for (const val of Object.values(row)) {
                         const strVal = String(val).toLowerCase()
@@ -132,14 +161,13 @@ export default function UploadPage() {
 
                     if (heuristicStatus) stdStatus = heuristicStatus
                 } else {
-                    // Update flags based on the provided status
                     if (lowerStatus.includes("denied") || lowerStatus.includes("deni")) isDeni = true;
                     if (lowerStatus.includes("arbitration")) isArb = true;
                 }
 
                 const uniqueId = claimId && !claimId.startsWith("CLM-UNKNOWN") ? claimId : `${sheetName}-${index}`
                 const billedAmt = parseFloat(String(billedAmtRaw).replace(/[^0-9.-]/g, '')) || 0
-                const paidAmt = parseFloat(String(paidAmtRaw).replace(/[^0-9.-]/g, '')) || 0
+                const paidAmt = 0 
 
                 if (groupedClaimsMap.has(uniqueId)) {
                     const existing = groupedClaimsMap.get(uniqueId)!
@@ -176,8 +204,8 @@ export default function UploadPage() {
                         cptCode: cptCode || "N/A",
                         insuranceCompany: insuranceCompany || "Unknown Company",
                         insuranceType: insuranceType || "Unknown Insurance",
-                        payerId: String(getVal(["payer edi id", "payer edi", "payer id", "payer #", "payer number"]) || ""),
-                        patientName: toTitleCase(String(getVal(["patient", "patient name", "subscriber"]) || "Unknown Patient")),
+                        payerId: String(getValRobust(row, ["payer edi id", "payer edi", "payer id", "payer #", "payer number"])),
+                        patientName: toTitleCase(String(getValRobust(row, ["patient name", "patient", "subscriber name", "subscriber"]) || "Unknown Patient")),
                         serviceDate,
                         claimSentDate,
                         billedAmt,
@@ -194,12 +222,107 @@ export default function UploadPage() {
         const allClaims = Array.from(groupedClaimsMap.values())
         if (allClaims.length > 0) {
             setClaims(allClaims)
-            setSuccess(`Successfully loaded ${allClaims.length} records across ${workbook.SheetNames.length} sheets.`)
-            setTimeout(() => {
-                router.push("/")
-            }, 2000)
+            setSuccess(`Successfully loaded ${allClaims.length} records. Now upload the Payment Report to calculate totals.`)
         } else {
             setError("No valid claim records found in the uploaded file.")
+        }
+    }
+
+    const processPaymentWorkbook = (workbook: XLSX.WorkBook) => {
+        if (claims.length === 0) {
+            setPaymentError("Please upload the Claims Data first.")
+            return
+        }
+
+        const updatedClaims = claims.map(c => ({ ...c }));
+        let matchCount = 0;
+        let diagnosticMisses: string[] = [];
+
+        // PRE-COMPUTE claims map for O(1) lightning fast lookups
+        const claimsLookup = new Map<string, number>();
+        const partialLookup = new Map<string, number>();
+
+        for (let i = 0; i < updatedClaims.length; i++) {
+            const c = updatedClaims[i];
+            if (!c.patientName || !c.serviceDate) continue;
+            
+            const cDosStr = format(new Date(c.serviceDate), 'yyyy-MM-dd');
+            const cNameLower = getSortedName(c.patientName);
+            const claimCpts = c.cptCode.toLowerCase().split(',').map(code => code.trim());
+            
+            partialLookup.set(`${cNameLower}|${cDosStr}`, i);
+
+            for (const cpt of claimCpts) {
+                if (!cpt) continue;
+                const key = `${cNameLower}|${cDosStr}|${cpt}`;
+                if (!claimsLookup.has(key)) {
+                    claimsLookup.set(key, i);
+                }
+            }
+        }
+
+        workbook.SheetNames.forEach((sheetName) => {
+            const worksheet = workbook.Sheets[sheetName]
+            const json = XLSX.utils.sheet_to_json(worksheet, {
+                defval: "",
+                raw: false
+            }) as Record<string, unknown>[]
+
+            json.forEach((row) => {
+                const pNameRaw = getValRobust(row, ["patient name", "patient", "subscriber name", "subscriber"])
+                const dosRaw = getValRobust(row, ["dos", "date of service", "service date"])
+                const cptRaw = getValRobust(row, ["cpt code", "cpt", "procedure code", "procedure"])
+                const totalRaw = getValRobust(row, ["grand total", "total payment", "paid", "payment", "total"])
+
+                if (!pNameRaw || !dosRaw) return;
+
+                const pNameLower = getSortedName(pNameRaw);
+                const dosDate = parseDateSafe(dosRaw);
+                const cptStr = String(cptRaw).trim().toLowerCase();
+                const total = parseFloat(String(totalRaw).replace(/[^0-9.-]/g, '')) || 0;
+
+                if (!dosDate) return;
+
+                const dosStr = format(dosDate, 'yyyy-MM-dd');
+                let matchIndex = -1;
+
+                if (cptStr) {
+                    const lookupKey = `${pNameLower}|${dosStr}|${cptStr}`;
+                    const foundIdx = claimsLookup.get(lookupKey);
+                    if (foundIdx !== undefined) {
+                        matchIndex = foundIdx;
+                    }
+                }
+
+                if (matchIndex === -1) {
+                    const partialKey = `${pNameLower}|${dosStr}`;
+                    const pIdx = partialLookup.get(partialKey);
+                    if (pIdx !== undefined) {
+                        matchIndex = pIdx;
+                    } else if (diagnosticMisses.length < 3) {
+                        diagnosticMisses.push(`Couldn't map Payment for Name: "${pNameRaw}", DOS: ${dosStr}`);
+                    }
+                }
+
+                if (matchIndex !== -1) {
+                    updatedClaims[matchIndex].paidAmt = (updatedClaims[matchIndex].paidAmt || 0) + total;
+                    matchCount++;
+                }
+            })
+        })
+
+        setClaims(updatedClaims)
+
+        if (matchCount === 0) {
+            const sampleClaims = claims.slice(0, 3).map(c => `[${c.patientName} - ${c.serviceDate ? format(c.serviceDate, 'yyyy-MM-dd') : 'No Date'}]`);
+            setPaymentError(`0 rows matched! 
+Payment File asked for: ${diagnosticMisses.join(" | ")}. 
+BUT Claims File currently holds: ${sampleClaims.join(" | ")}. Check if your files match!`)
+        } else {
+            setPaymentSuccess(`Successfully mapped payments from ${matchCount} rows to existing claims!`)
+            setTimeout(() => {
+                router.push("/")
+            }, 1800)
         }
     }
 
@@ -212,7 +335,11 @@ export default function UploadPage() {
             if (!res.ok) throw new Error("Could not fetch dummy file.")
             const arrayBuffer = await res.arrayBuffer()
             const workbook = XLSX.read(arrayBuffer, { type: "array" })
-            processWorkbook(workbook)
+            processClaimsWorkbook(workbook)
+            // For dummy data, auto route
+            setTimeout(() => {
+                router.push("/")
+            }, 1500)
         } catch (err: unknown) {
             console.error(err)
             const msg = err instanceof Error ? err.message : String(err)
@@ -222,7 +349,7 @@ export default function UploadPage() {
         }
     }
 
-    const onDrop = useCallback((acceptedFiles: File[]) => {
+    const onDropClaims = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0]
         if (!file) return
 
@@ -235,7 +362,7 @@ export default function UploadPage() {
             try {
                 const data = new Uint8Array(e.target?.result as ArrayBuffer)
                 const workbook = XLSX.read(data, { type: "array" })
-                processWorkbook(workbook)
+                processClaimsWorkbook(workbook)
             } catch (err: unknown) {
                 console.error(err)
                 const msg = err instanceof Error ? err.message : String(err)
@@ -244,13 +371,46 @@ export default function UploadPage() {
                 setIsLoading(false)
             }
         }
-
         reader.readAsArrayBuffer(file)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [setClaims, setIsLoading, router])
 
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        onDrop,
+    const onDropPayment = useCallback((acceptedFiles: File[]) => {
+        const file = acceptedFiles[0]
+        if (!file) return
+
+        setIsLoading(true)
+        setPaymentError(null)
+        setPaymentSuccess(null)
+
+        const reader = new FileReader()
+        reader.onload = (e) => {
+            try {
+                const data = new Uint8Array(e.target?.result as ArrayBuffer)
+                const workbook = XLSX.read(data, { type: "array" })
+                processPaymentWorkbook(workbook)
+            } catch (err: unknown) {
+                console.error(err)
+                const msg = err instanceof Error ? err.message : String(err)
+                setPaymentError("Error parsing the Payment Report. " + msg)
+            } finally {
+                setIsLoading(false)
+            }
+        }
+        reader.readAsArrayBuffer(file)
+    }, [claims, setClaims, setIsLoading, router])
+
+    const { getRootProps: claimsProps, getInputProps: claimsInputProps, isDragActive: claimsActive } = useDropzone({
+        onDrop: onDropClaims,
+        accept: {
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
+            "application/vnd.ms-excel": [".xls"],
+            "text/csv": [".csv"],
+        },
+        maxFiles: 1,
+    })
+
+    const { getRootProps: paymentProps, getInputProps: paymentInputProps, isDragActive: paymentActive } = useDropzone({
+        onDrop: onDropPayment,
         accept: {
             "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
             "application/vnd.ms-excel": [".xls"],
@@ -260,59 +420,130 @@ export default function UploadPage() {
     })
 
     return (
-        <div className="p-6 max-w-4xl mx-auto mt-10">
-            <Card className="shadow-lg border-0 bg-card">
-                <CardHeader className="text-center pb-2">
-                    <CardTitle className="text-3xl font-bold tracking-tight">2025 - Chiro / PT / OT - Upload Data</CardTitle>
-                    <CardDescription className="text-lg mt-2">
-                        Upload your Excel spreadsheet (.xlsx, .xls) or CSV file containing claim-level data.
+        <div className="p-4 max-w-6xl mx-auto mt-2 space-y-4">
+            <div className="text-center pb-6">
+                <h1 className="text-3xl font-bold tracking-tight">Chiro / PT / OT - Upload Data</h1>
+                <p className="text-lg mt-2 text-muted-foreground">
+                    Upload your data files to populate the dashboard analytics.
+                </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Stage 1: Claims Upload */}
+            <Card className="shadow-sm border flex flex-col min-h-[450px]">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground text-sm font-bold">1</div>
+                        Claims Data (.xlsx, .csv)
+                    </CardTitle>
+                    <CardDescription>
+                        Upload the primary claims file containing all main claim information.
                     </CardDescription>
                 </CardHeader>
-                <CardContent className="mt-6">
+                <CardContent className="flex-1 flex flex-col pb-6">
                     <div
-                        {...getRootProps()}
-                        className={`border-2 border-dashed rounded-xl p-16 text-center cursor-pointer transition-all duration-300 ${isDragActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
+                        {...claimsProps()}
+                        className={`flex-1 flex flex-col justify-center items-center border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors duration-200 ${claimsActive ? "border-primary bg-primary/5" : "border-border hover:border-primary/50 hover:bg-muted/50"
                             }`}
                     >
-                        <input {...getInputProps()} />
+                        <input {...claimsInputProps()} />
                         <div className="mx-auto flex justify-center mb-6">
                             <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center">
                                 <FileSpreadsheet className="h-10 w-10 text-primary" />
                             </div>
                         </div>
-                        {isDragActive ? (
+                        {claimsActive ? (
                             <p className="text-xl font-medium text-primary">Drop the file here ...</p>
                         ) : (
                             <div>
-                                <p className="text-xl font-medium mb-2">Drag & drop your file here</p>
-                                <p className="text-muted-foreground">or click to browse your files</p>
+                                <p className="text-xl font-medium mb-2">Drag & drop your Claims file here</p>
+                                <p className="text-base text-muted-foreground">or click to browse</p>
                             </div>
                         )}
                     </div>
 
                     {error && (
-                        <div className="mt-6 p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-3">
+                        <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-3">
                             <AlertCircle className="h-5 w-5" />
                             <p className="font-medium">{error}</p>
                         </div>
                     )}
 
                     {success && (
-                        <div className="mt-6 p-4 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg flex items-center gap-3">
+                        <div className="mt-4 p-4 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg flex items-center gap-3">
                             <CheckCircle2 className="h-5 w-5" />
                             <p className="font-medium">{success}</p>
                         </div>
                     )}
-
-                    <div className="mt-8 flex flex-col items-center border-t pt-8">
-                        <p className="text-sm text-muted-foreground mb-4">Or try out the application with generated sample data</p>
-                        <Button onClick={loadDummyData} variant="secondary" className="gap-2">
-                            <Wand2 className="h-4 w-4" />
-                            Load Dummy Data
-                        </Button>
-                    </div>
                 </CardContent>
             </Card>
+
+            {/* Stage 2: Payment Report Upload */}
+            <Card className={`shadow-sm border flex flex-col min-h-[450px] transition-opacity duration-300 ${claims.length === 0 ? 'opacity-50 pointer-events-none grayscale-[0.5]' : ''}`}>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500 text-white text-sm font-bold">2</div>
+                        Payment Report (.xlsx, .csv)
+                    </CardTitle>
+                    <CardDescription>
+                        Upload the payment/collection report. Needs columns: Patient Name, DOS, CPT, Grand Total.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col pb-6">
+                    <div
+                        {...paymentProps()}
+                        className={`flex-1 flex flex-col justify-center items-center border-2 border-dashed rounded-xl p-10 text-center cursor-pointer transition-colors duration-200 ${paymentActive ? "border-blue-500 bg-blue-500/5" : "border-border hover:border-blue-500/50 hover:bg-muted/50"
+                            }`}
+                    >
+                        <input {...paymentInputProps()} />
+                        <div className="mx-auto flex justify-center mb-6">
+                            <div className="h-20 w-20 rounded-full bg-blue-500/10 flex items-center justify-center">
+                                <FileSpreadsheet className="h-10 w-10 text-blue-500" />
+                            </div>
+                        </div>
+                        {paymentActive ? (
+                            <p className="text-xl font-medium text-blue-500">Drop the file here ...</p>
+                        ) : (
+                            <div>
+                                <p className="text-xl font-medium mb-2">Drag & drop your Payment Report here</p>
+                                <p className="text-base text-muted-foreground">or click to browse</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {paymentError && (
+                        <div className="mt-4 p-4 bg-destructive/10 text-destructive rounded-lg flex items-center gap-3">
+                            <AlertCircle className="h-5 w-5" />
+                            <p className="font-medium">{paymentError}</p>
+                        </div>
+                    )}
+
+                    {paymentSuccess && (
+                        <div className="mt-4 p-4 bg-green-500/10 text-green-600 dark:text-green-400 rounded-lg flex items-center gap-3">
+                            <CheckCircle2 className="h-5 w-5" />
+                            <p className="font-medium">{paymentSuccess}</p>
+                        </div>
+                    )}
+                </CardContent>
+            </Card>
+            </div>
+
+            <div className="flex flex-col md:flex-row justify-between items-center bg-card shadow-sm border rounded-xl p-4 mt-6 shrink-0 relative z-10 w-full hover:shadow-md transition-shadow">
+                <Button onClick={loadDummyData} variant="outline" className="gap-2">
+                    <Wand2 className="h-4 w-4" />
+                    Load Dummy Data
+                </Button>
+                
+                <Button 
+                    onClick={() => router.push("/")} 
+                    className="gap-2 mt-4 md:mt-0 w-full md:w-auto"
+                    disabled={claims.length === 0}
+                >
+                    Continue to Dashboard
+                    <ArrowRight className="h-4 w-4" />
+                </Button>
+            </div>
         </div>
     )
 }
+
