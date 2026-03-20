@@ -551,8 +551,14 @@ export default function ProviderPage() {
                                                         </span>
                                                     </TableCell>
                                                 </motion.tr>
+                                                <AnimatePresence>
                                                 {expandedClaimId === claim.id && claim.cptDetails && claim.cptDetails.length > 0 && (
-                                                    <TableRow className="bg-primary/[0.01] hover:bg-primary/[0.01]">
+                                                    <motion.tr 
+                                                        initial={{ opacity: 0 }}
+                                                        animate={{ opacity: 1 }}
+                                                        exit={{ opacity: 0 }}
+                                                        className="bg-primary/[0.01] hover:bg-primary/[0.01]"
+                                                    >
                                                         <TableCell colSpan={8} className="p-0 border-b border-border/50">
                                                             <motion.div 
                                                                 initial={{ height: 0, opacity: 0 }}
@@ -587,8 +593,9 @@ export default function ProviderPage() {
                                                                 </div>
                                                             </motion.div>
                                                         </TableCell>
-                                                    </TableRow>
+                                                    </motion.tr>
                                                 )}
+                                                </AnimatePresence>
                                                 </React.Fragment>
                                             ))
                                         )}

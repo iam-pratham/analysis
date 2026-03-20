@@ -464,7 +464,8 @@ export default function DashboardPage() {
                                               animate={{ opacity: 1, y: 0 }}
                                               className={`hover:bg-primary/[0.03] transition-colors border-b border-border/50 group/row cursor-pointer ${expandedClaimId === claim.id ? 'bg-primary/[0.05]' : ''}`}
                                               onClick={() => setExpandedClaimId(expandedClaimId === claim.id ? null : claim.id)}
-                                          >                                            <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
+                                          >
+                                              <TableCell className="whitespace-nowrap text-xs font-mono pl-6 py-4">
                                                   {format(parseDateSafe(claim.serviceDate), "MM/dd/yyyy")}
                                               </TableCell>
                                               <TableCell className="whitespace-nowrap text-xs font-bold py-4">
@@ -501,8 +502,14 @@ export default function DashboardPage() {
                                                   </span>
                                               </TableCell>
                                           </motion.tr>
+                                              <AnimatePresence>
                                               {expandedClaimId === claim.id && claim.cptDetails && claim.cptDetails.length > 0 && (
-                                                  <TableRow className="bg-primary/[0.01] hover:bg-primary/[0.01]">
+                                                  <motion.tr 
+                                                      initial={{ opacity: 0 }}
+                                                      animate={{ opacity: 1 }}
+                                                      exit={{ opacity: 0 }}
+                                                      className="bg-primary/[0.01] hover:bg-primary/[0.01]"
+                                                  >
                                                       <TableCell colSpan={8} className="p-0 border-b border-border/50">
                                                           <motion.div 
                                                               initial={{ height: 0, opacity: 0 }}
@@ -537,8 +544,9 @@ export default function DashboardPage() {
                                                               </div>
                                                           </motion.div>
                                                       </TableCell>
-                                                  </TableRow>
+                                                  </motion.tr>
                                               )}
+                                              </AnimatePresence>
                                               </React.Fragment>
                                       ))
                                   )}
