@@ -62,23 +62,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
         const cleanedClaims = claims.map(c => {
             // Apply naming fixes according to user request
             let newIns = c.insuranceType;
+            const insLower = (newIns || "").toLowerCase();
+            const compLower = (c.insuranceCompany || "").toLowerCase();
+
             if (
-                newIns?.toLowerCase().includes("workers compensation") ||
-                newIns?.toLowerCase().includes("worker\'s compensation") ||
-                newIns?.toLowerCase() === "wc" ||
-                newIns?.toLowerCase().includes("motor vehicle") ||
-                newIns?.toLowerCase() === "mva" ||
-                newIns?.toLowerCase() === "mva/wc" ||
-                newIns?.toLowerCase() === "mva / wc" ||
-                newIns?.toLowerCase().includes("mva/wc") ||
-                newIns?.toLowerCase().includes("mva / wc")
+                insLower.includes("workers compensation") ||
+                insLower.includes("worker's compensation") ||
+                insLower === "wc" ||
+                insLower.includes("motor vehicle") ||
+                insLower === "mva" ||
+                insLower === "mva/wc" ||
+                insLower === "mva / wc" ||
+                insLower.includes("mva/wc") ||
+                insLower.includes("mva / wc") ||
+                insLower.includes("mva oc") ||
+                compLower.includes("nj manufactur") ||
+                compLower.includes("njm") ||
+                compLower.includes("geico")
             ) {
                 newIns = "MVA/WC";
-            } else if (newIns?.toLowerCase() === "medicaid" || newIns?.toLowerCase() === "lop") {
+            } else if (insLower === "medicaid" || insLower === "lop" || compLower.includes("friedland")) {
                 newIns = "LOP";
-            } else if (newIns?.toLowerCase().includes("commercial")) {
+            } else if (
+                insLower.includes("commercial") || 
+                insLower.includes("health") || 
+                compLower.includes("horizon") || 
+                compLower.includes("umr")
+            ) {
                 newIns = "Commercial";
-            } else if (newIns?.toLowerCase().includes("medicare")) {
+            } else if (insLower.includes("medicare")) {
                 newIns = "Medicare";
             }
 

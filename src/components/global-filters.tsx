@@ -14,6 +14,7 @@ export function GlobalFilters() {
     const insurances = Array.from(new Set(claims.map((c) => {
         let newIns = c.insuranceType || "Unknown Insurance";
         const low = newIns.toLowerCase();
+        const compLow = (c.insuranceCompany || "").toLowerCase();
         if (
             low.includes("workers compensation") ||
             low.includes("worker's compensation") ||
@@ -23,18 +24,27 @@ export function GlobalFilters() {
             low === "mva/wc" ||
             low === "mva / wc" ||
             low.includes("mva/wc") ||
-            low.includes("mva / wc")
+            low.includes("mva / wc") ||
+            low.includes("mva oc") ||
+            compLow.includes("nj manufactur") ||
+            compLow.includes("njm") ||
+            compLow.includes("geico")
         ) {
             newIns = "MVA/WC";
-        } else if (low === "medicaid" || low === "lop") {
+        } else if (low === "medicaid" || low === "lop" || compLow.includes("friedland")) {
             newIns = "LOP";
-        } else if (low.includes("commercial")) {
+        } else if (
+            low.includes("commercial") || 
+            low.includes("health") || 
+            compLow.includes("horizon") || 
+            compLow.includes("umr")
+        ) {
             newIns = "Commercial";
         } else if (low.includes("medicare")) {
             newIns = "Medicare";
         }
         return newIns;
-    }))).sort()
+    }))).filter(i => i && i !== "Unknown Insurance").sort()
 
     const monthsKeys = Array.from(new Set(claims.map((c) => {
         if (!c.serviceDate) return null;

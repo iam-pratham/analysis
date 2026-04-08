@@ -75,7 +75,7 @@ export default function ProviderPage() {
         }
     }, [selectedCategory])
 
-    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalArb, totalLop, totalNoOon, totalChiro, totalPT, totalOT } = useMemo(() => {
+    const { providerVolumeMap, totalBilled, totalPaid, totalPaidClaims, totalArb, totalLop, totalNoOon, totalChiro, totalPT, totalOT, totalPainMgmt } = useMemo(() => {
         const pMap: Record<string, number> = {}
         let tBilled = 0
         let tPaid = 0
@@ -86,6 +86,7 @@ export default function ProviderPage() {
         let tChiro = 0
         let tPT = 0
         let tOT = 0
+        let tPainMgmt = 0
 
         filteredClaims.forEach(c => {
             const statusStr = String(c.claimStatus || (c as any).report || '').toLowerCase();
@@ -125,10 +126,12 @@ export default function ProviderPage() {
             const isChiro = name.includes(' - Chiro');
             const isPT = name.includes(' - PT');
             const isOT = name.includes(' - OT');
+            const isPainMgmt = name.includes(' - Pain Mgmt') || name.includes(' - PM');
 
             if (isChiro) tChiro++
             if (isPT) tPT++
             if (isOT) tOT++
+            if (isPainMgmt) tPainMgmt++
         })
         return {
             providerVolumeMap: pMap,
@@ -140,7 +143,8 @@ export default function ProviderPage() {
             totalNoOon: tNoOon,
             totalChiro: tChiro,
             totalPT: tPT,
-            totalOT: tOT
+            totalOT: tOT,
+            totalPainMgmt: tPainMgmt
         }
     }, [filteredClaims])
 
@@ -168,6 +172,7 @@ export default function ProviderPage() {
             if (target === "Chiro") return name.includes(" - Chiro")
             if (target === "PT") return name.includes(" - PT")
             if (target === "OT") return name.includes(" - OT")
+            if (target === "Pain Mgmt") return name.includes(" - Pain Mgmt") || name.includes(" - PM")
             return false
         })
 
@@ -196,7 +201,7 @@ export default function ProviderPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT - Provider Performance</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT / Pain Mgmt - Provider Performance</h1>
 
             <GlobalFilters />
 
@@ -276,51 +281,6 @@ export default function ProviderPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
-                        <Card 
-                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
-                            onClick={() => setSelectedCategory("Chiro")}
-                        >
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-tight">Chiro Claims</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-[var(--color-chart-1)]">
-                                    {totalChiro.toLocaleString()}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
-                            </CardContent>
-                        </Card>
-                        <Card 
-                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
-                            onClick={() => setSelectedCategory("PT")}
-                        >
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-tight">PT Claims</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-[var(--color-chart-2)]">
-                                    {totalPT.toLocaleString()}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
-                            </CardContent>
-                        </Card>
-                        <Card 
-                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
-                            onClick={() => setSelectedCategory("OT")}
-                        >
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-tight">OT Claims</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-[var(--color-chart-4)]">
-                                    {totalOT.toLocaleString()}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
                         <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-sm font-medium">Under Arbitration</CardTitle>
@@ -352,6 +312,65 @@ export default function ProviderPage() {
                                     {totalNoOon.toLocaleString()}
                                 </div>
                                 <p className="text-xs text-muted-foreground mt-1">Non-covered OON</p>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+                        <Card 
+                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
+                            onClick={() => setSelectedCategory("Chiro")}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-tight whitespace-nowrap">Chiro Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-[var(--color-chart-1)]">
+                                    {totalChiro.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
+                            </CardContent>
+                        </Card>
+                        <Card 
+                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
+                            onClick={() => setSelectedCategory("PT")}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-tight whitespace-nowrap">PT Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-[var(--color-chart-2)]">
+                                    {totalPT.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
+                            </CardContent>
+                        </Card>
+                        <Card 
+                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
+                            onClick={() => setSelectedCategory("OT")}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-tight whitespace-nowrap">OT Claims</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-[var(--color-chart-4)]">
+                                    {totalOT.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
+                            </CardContent>
+                        </Card>
+                        <Card 
+                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
+                            onClick={() => setSelectedCategory("Pain Mgmt")}
+                        >
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-tight whitespace-nowrap">Pain Mgmt</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-[var(--color-chart-5)]">
+                                    {totalPainMgmt.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
                             </CardContent>
                         </Card>
                     </motion.div>
@@ -532,7 +551,8 @@ export default function ProviderPage() {
                                                             <span className="text-[10px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
                                                                 {claim.doctorName?.includes(' - Chiro') ? 'Chiro' : 
                                                                  claim.doctorName?.includes(' - PT') ? 'PT' : 
-                                                                 claim.doctorName?.includes(' - OT') ? 'OT' : 'N/A'}
+                                                                 claim.doctorName?.includes(' - OT') ? 'OT' : 
+                                                                 (claim.doctorName?.includes(' - Pain Mgmt') || claim.doctorName?.includes(' - PM')) ? 'Pain Mgmt' : 'N/A'}
                                                             </span>
                                                         </div>
                                                     </TableCell>

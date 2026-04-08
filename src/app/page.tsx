@@ -199,7 +199,7 @@ export default function DashboardPage() {
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT - Claims Overview</h1>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT / Pain Mgmt - Claims Overview</h1>
         <Button onClick={() => setIsSearchOpen(true)} variant="outline" className="gap-2 bg-background/50 backdrop-blur-md">
             <Search className="h-4 w-4" /> Global Search
         </Button>

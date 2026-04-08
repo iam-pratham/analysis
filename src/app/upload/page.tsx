@@ -450,7 +450,7 @@ BUT Claims File currently holds: ${sampleClaims.join(" | ")}. Check if your file
     return (
         <div className="p-4 max-w-6xl mx-auto mt-2 space-y-4">
             <div className="text-center pb-6">
-                <h1 className="text-3xl font-bold tracking-tight">Chiro / PT / OT - Upload Data</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Chiro / PT / OT / Pain Mgmt - Upload Data</h1>
                 <p className="text-lg mt-2 text-muted-foreground">
                     Upload your data files to populate the dashboard analytics.
                 </p>

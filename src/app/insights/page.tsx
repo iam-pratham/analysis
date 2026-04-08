@@ -252,7 +252,7 @@ export default function ReportsPage() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <h1 className="text-3xl font-bold tracking-tight text-foreground">
-                Chiro / PT / OT - Status Breakdown
+                Chiro / PT / OT / Pain Mgmt - Status Breakdown
             </h1>
 
             <GlobalFilters />
