@@ -211,8 +211,8 @@ export default function ProviderPage() {
                 animate="show"
                 className="grid gap-6 md:grid-cols-2"
             >
-                <motion.div variants={itemVariants} className="h-full">
-                    <Card className="flex flex-col h-full">
+                <motion.div variants={itemVariants}>
+                    <Card className="flex flex-col">
                         <CardHeader>
                             <CardTitle>Total Claims by Provider</CardTitle>
                         </CardHeader>
