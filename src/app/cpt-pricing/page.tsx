@@ -159,7 +159,7 @@ export default function CptPricingPage() {
                                                                 className={`
                                                                     py-3 text-[11px] sm:text-sm text-center
                                                                     ${idx === 0 ? "font-mono font-bold text-primary pl-2 sm:pl-6 text-left" : ""}
-                                                                    ${idx === 1 ? "font-medium text-[#455A64] text-left min-w-[120px] max-w-[200px]" : ""}
+                                                                    ${idx === 1 ? "font-medium text-[#455A64] text-left max-w-[180px] sm:max-w-[300px] whitespace-normal break-words" : ""}
                                                                     ${idx > 1 ? "font-semibold text-green-600/90 tabular-nums px-1 sm:px-3" : ""}
                                                                     ${idx === row.length - 1 ? "pr-2 sm:pr-6 text-right" : ""}
                                                                 `}
