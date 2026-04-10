@@ -1,4 +1,5 @@
 "use client"
+import { PageHeader } from "@/components/page-header";
 
 import React, { useEffect, useMemo } from "react"
 import { useData } from "@/context/data-context"
@@ -51,7 +52,7 @@ const itemVariants = {
 export default function DashboardPage() {
   const { filteredClaims, claims } = useData()
   const router = useRouter()
-
+  
   useEffect(() => {
     if (claims.length === 0) {
       router.replace("/upload")
@@ -160,9 +161,7 @@ export default function DashboardPage() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT - Claims Overview</h1>
-      </div>
+      <PageHeader title="Chiro / PT / OT - Claims Overview" />
 
       <GlobalFilters />
 
@@ -339,7 +338,6 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
       </motion.div>
-
-    </div>
+          </div>
   )
 }

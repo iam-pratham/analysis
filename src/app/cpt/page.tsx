@@ -1,4 +1,5 @@
 "use client"
+import { PageHeader } from "@/components/page-header";
 
 import React, { useMemo } from "react"
 import { useData } from "@/context/data-context"
@@ -56,7 +57,7 @@ export default function CptAnalysisPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT - CPT Trends</h1>
+            <PageHeader title="Chiro / PT / OT - CPT Trends" />
             <GlobalFilters />
 
             <motion.div

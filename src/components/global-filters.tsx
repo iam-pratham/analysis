@@ -3,13 +3,10 @@
 import { useData } from "@/context/data-context"
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "./ui/select"
 import { Button } from "./ui/button"
-import { Search, FilterX } from "lucide-react"
-import React, { useState } from "react"
-import { GlobalSearchModal } from "./global-search-modal"
+import { FilterX } from "lucide-react"
 
 export function GlobalFilters() {
     const { claims, filteredClaims, filters, setFilters } = useData()
-    const [isSearchModalOpen, setIsSearchModalOpen] = useState(false)
 
     if (claims.length === 0) return null
 
@@ -129,33 +126,21 @@ export function GlobalFilters() {
                 </div>
             </div>
 
-            <div className="flex items-center gap-2">
-                <Button
-                    variant="outline"
-                    className="gap-2 bg-background/50 backdrop-blur-md"
-                    onClick={() => setIsSearchModalOpen(true)}
-                >
-                    <Search className="h-4 w-4" /> Global Search
-                </Button>
-
-                <Button
-                    variant="ghost"
-                    className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground hover:text-primary transition-colors h-auto py-2"
-                    onClick={() => setFilters({
-                        provider: null,
-                        doctor: null,
-                        insuranceType: null,
-                        cptCode: null,
-                        month: null,
-                        dateStart: null,
-                        dateEnd: null,
-                    })}
-                >
-                    Clear Filters
-                </Button>
-            </div>
-            
-            <GlobalSearchModal isOpen={isSearchModalOpen} onOpenChange={setIsSearchModalOpen} />
+            <Button
+                variant="ghost"
+                className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground hover:text-primary transition-colors h-auto py-2"
+                onClick={() => setFilters({
+                    provider: null,
+                    doctor: null,
+                    insuranceType: null,
+                    cptCode: null,
+                    month: null,
+                    dateStart: null,
+                    dateEnd: null,
+                })}
+            >
+                Clear Filters
+            </Button>
         </div>
     )
 }

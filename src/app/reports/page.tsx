@@ -1,4 +1,5 @@
 "use client"
+import { PageHeader } from "@/components/page-header";
 
 import React, { useState, useMemo } from "react"
 import { useData } from "@/context/data-context"
@@ -64,7 +65,7 @@ export default function RawDataPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT - Raw Data</h1>
+            <PageHeader title="Chiro / PT / OT - Raw Data" />
             <GlobalFilters />
 
             <motion.div variants={containerVariants} initial="hidden" animate="show">
