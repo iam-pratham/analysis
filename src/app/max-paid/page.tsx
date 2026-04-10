@@ -8,7 +8,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Trophy, ChevronDown, ChevronUp, Search } from "lucide-react"
+import { Trophy, ChevronDown, ChevronUp, Search, RefreshCw } from "lucide-react"
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -27,6 +27,17 @@ export default function MaxPaidPage() {
     const { filteredClaims, claims } = useData()
     const [expandedCpt, setExpandedCpt] = useState<string | null>(null)
     const [cptSearch, setCptSearch] = useState("")
+    const [isPending, setIsPending] = useState(false)
+
+    React.useEffect(() => {
+        if (cptSearch) {
+            setIsPending(true)
+            const timer = setTimeout(() => setIsPending(false), 300)
+            return () => clearTimeout(timer)
+        } else {
+            setIsPending(false)
+        }
+    }, [cptSearch])
 
     const maxPaidData = useMemo(() => {
         // map[cpt][insurance] = maxPaid
@@ -106,10 +117,19 @@ export default function MaxPaidPage() {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input 
                                         placeholder="Search CPT..." 
-                                        className="pl-9 bg-background shadow-sm"
+                                        className="pl-9 pr-9 bg-background shadow-sm"
                                         value={cptSearch}
                                         onChange={(e) => setCptSearch(e.target.value)}
                                     />
+                                    {isPending && (
+                                        <motion.div 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                                        >
+                                            <RefreshCw className="h-3 w-3 animate-spin text-primary" />
+                                        </motion.div>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>
@@ -124,13 +144,25 @@ export default function MaxPaidPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredMaxPaidData.length > 0 ? (
-                                            filteredMaxPaidData.map((row, i) => (
-                                                <React.Fragment key={`cpt-${i}`}>
-                                                    <TableRow 
-                                                        className={`transition-colors border-b border-border/50 cursor-pointer group hover:bg-primary/[0.03] ${expandedCpt === row.cpt ? 'bg-primary/[0.02]' : ''}`}
-                                                        onClick={() => setExpandedCpt(expandedCpt === row.cpt ? null : row.cpt)}
-                                                    >
+                                        <AnimatePresence mode="popLayout">
+                                            {isPending ? (
+                                                <TableRow>
+                                                    <TableCell colSpan={3} className="h-32 text-center border-b-0">
+                                                        <div className="flex flex-col items-center justify-center gap-2 opacity-50">
+                                                            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                                                            <p className="text-[10px] font-bold uppercase tracking-widest">Updating results...</p>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : filteredMaxPaidData.length > 0 ? (
+                                                filteredMaxPaidData.map((row, i) => (
+                                                    <React.Fragment key={`cpt-${i}`}>
+                                                        <motion.tr 
+                                                            initial={{ opacity: 0, y: 4 }}
+                                                            animate={{ opacity: 1, y: 0 }}
+                                                            className={`transition-colors border-b border-border/50 cursor-pointer group hover:bg-primary/[0.03] ${expandedCpt === row.cpt ? 'bg-primary/[0.02]' : ''}`}
+                                                            onClick={() => setExpandedCpt(expandedCpt === row.cpt ? null : row.cpt)}
+                                                        >
                                                         <TableCell className="font-mono font-bold text-[#455A64] py-4 pl-6 text-sm">
                                                             <div className="flex items-center gap-2">
                                                                 {expandedCpt === row.cpt ? (
@@ -154,7 +186,7 @@ export default function MaxPaidPage() {
                                                         <TableCell className="text-right font-black text-green-600 py-4 pr-6 text-base tracking-tight">
                                                             ${row.highestPaid.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                                         </TableCell>
-                                                    </TableRow>
+                                                    </motion.tr>
                                                     <AnimatePresence>
                                                         {expandedCpt === row.cpt && (
                                                             <TableRow className="bg-muted/10 hover:bg-muted/10 border-b border-border/50">
@@ -193,10 +225,11 @@ export default function MaxPaidPage() {
                                         ) : (
                                             <TableRow>
                                                 <TableCell colSpan={3} className="h-32 text-center text-muted-foreground font-medium">
-                                                    No payment data found for the current filters.
+                                                    No cpt data found for the current search.
                                                 </TableCell>
                                             </TableRow>
                                         )}
+                                        </AnimatePresence>
                                     </TableBody>
                                 </Table>
                             </div>
