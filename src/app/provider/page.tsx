@@ -201,7 +201,7 @@ export default function ProviderPage() {
 
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-6">
-            <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT / Pain Mgmt - Provider Performance</h1>
+            <h1 className="text-3xl font-bold tracking-tight text-foreground">Chiro / PT / OT - Provider Performance</h1>
 
             <GlobalFilters />
 
@@ -281,42 +281,6 @@ export default function ProviderPage() {
                     </motion.div>
 
                     <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
-                        <Card className="flex flex-col justify-center h-full">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Under Arbitration</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-orange-600">
-                                    {totalArb.toLocaleString()}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">PIP / Arbitration Cases</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="flex flex-col justify-center h-full">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Straight LOP</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-orange-500">
-                                    {totalLop.toLocaleString()}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">Letter of Protection Only</p>
-                            </CardContent>
-                        </Card>
-                        <Card className="flex flex-col justify-center h-full">
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">No OON Benefits</CardTitle>
-                            </CardHeader>
-                            <CardContent>
-                                <div className="text-2xl font-bold text-orange-400">
-                                    {totalNoOon.toLocaleString()}
-                                </div>
-                                <p className="text-xs text-muted-foreground mt-1">Non-covered OON</p>
-                            </CardContent>
-                        </Card>
-                    </motion.div>
-
-                    <motion.div variants={itemVariants} className="grid grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
                         <Card 
                             className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
                             onClick={() => setSelectedCategory("Chiro")}
@@ -359,18 +323,40 @@ export default function ProviderPage() {
                                 <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
                             </CardContent>
                         </Card>
-                        <Card 
-                            className="flex flex-col justify-center h-full cursor-pointer hover:bg-primary/[0.02] transition-colors border-primary/5 hover:border-primary/20"
-                            onClick={() => setSelectedCategory("Pain Mgmt")}
-                        >
+                    </motion.div>
+
+                    <motion.div variants={itemVariants} className="grid grid-cols-3 gap-4 flex-1">
+                        <Card className="flex flex-col justify-center h-full">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-tight whitespace-nowrap">Pain Mgmt</CardTitle>
+                                <CardTitle className="text-sm font-medium">Under Arbitration</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <div className="text-2xl font-bold text-[var(--color-chart-5)]">
-                                    {totalPainMgmt.toLocaleString()}
+                                <div className="text-2xl font-bold text-orange-600">
+                                    {totalArb.toLocaleString()}
                                 </div>
-                                <p className="text-xs text-muted-foreground mt-1 font-medium">Click to view details</p>
+                                <p className="text-xs text-muted-foreground mt-1">PIP / Arbitration Cases</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">Straight LOP</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-orange-500">
+                                    {totalLop.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Letter of Protection Only</p>
+                            </CardContent>
+                        </Card>
+                        <Card className="flex flex-col justify-center h-full">
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium">No OON Benefits</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold text-orange-400">
+                                    {totalNoOon.toLocaleString()}
+                                </div>
+                                <p className="text-xs text-muted-foreground mt-1">Non-covered OON</p>
                             </CardContent>
                         </Card>
                     </motion.div>

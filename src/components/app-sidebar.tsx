@@ -32,6 +32,7 @@ const items = [
     { title: "Provider Performance", url: "/provider", icon: Users },
     { title: "CPT Trends", url: "/cpt", icon: Activity },
     { title: "Payer Portfolio", url: "/insurance", icon: ShieldPlus },
+    { title: "Max Paid", url: "/max-paid", icon: Zap },
     { title: "Status Breakdown", url: "/insights", icon: BrainCircuit },
     { title: "Raw Data", url: "/reports", icon: FileBarChart },
 ]

@@ -134,11 +134,23 @@ export function DataProvider({ children }: { children: ReactNode }) {
 
             const cleanDoc = docSuffix ? `${cleanRaw}${docSuffix}` : cleanRaw;
 
+            const cleanCptCode = String(c.cptCode || "")
+                .split(',')
+                .map(s => s.replace(/\s+total$/i, '').trim())
+                .filter(s => s && s.toUpperCase() !== "INPT")
+                .join(', ');
+
+            const cleanCptDetails = c.cptDetails ? c.cptDetails
+                .map(d => ({ ...d, cpt: (d.cpt || "").replace(/\s+total$/i, '').trim() }))
+                .filter(d => d.cpt && d.cpt.toUpperCase() !== "INPT") : undefined;
+
             return {
                 ...c,
                 doctorName: cleanDoc,
                 providerName: c.providerName ? c.providerName.split(',')[0].trim() : "Unknown Provider",
-                insuranceType: newIns
+                insuranceType: newIns,
+                cptCode: cleanCptCode,
+                cptDetails: cleanCptDetails
             };
         });
 
