@@ -40,10 +40,12 @@ const shortenHeader = (header: string) => {
     if (header.includes("Percentile")) {
         return header.replace("Percentile ($)", "($)").replace(" Percentile", "").trim();
     }
-    if (header === "Medicare Fee MPFS") return "MPFS ($)";
+    if (header === "Medicare Fee MPFS") return "Medicare ($)";
     if (header === "PIP MVA") return "PIP ($)";
     return header;
 }
+
+const DISPLAY_INDICES = [0, 1, 6, 7, 8];
 
 export default function CptPricingPage() {
     const headers = pricingData[0] as string[];
@@ -119,14 +121,14 @@ export default function CptPricingPage() {
                                 <Table>
                                     <TableHeader className="bg-muted/10">
                                         <TableRow className="hover:bg-transparent">
-                                            {headers.map((header, idx) => (
+                                            {headers.filter((_, i) => DISPLAY_INDICES.includes(i)).map((header, idx) => (
                                                 <TableHead 
                                                     key={idx} 
                                                     className={`
                                                         font-black uppercase tracking-widest text-[#2D3142] py-4 text-[10px] sm:text-xs text-center
                                                         ${idx === 0 ? "pl-2 sm:pl-6 text-left" : ""}
                                                         ${idx === 1 ? "text-left" : ""}
-                                                        ${idx === headers.length - 1 ? "pr-2 sm:pr-6 text-right" : ""}
+                                                        ${idx === 4 ? "pr-2 sm:pr-6 text-right" : ""}
                                                     `}
                                                 >
                                                     {shortenHeader(header)}
@@ -138,7 +140,7 @@ export default function CptPricingPage() {
                                         <AnimatePresence mode="popLayout">
                                             {isPending ? (
                                                 <TableRow key="loading">
-                                                    <TableCell colSpan={headers.length} className="h-32 text-center border-b-0">
+                                                    <TableCell colSpan={5} className="h-32 text-center border-b-0">
                                                         <div className="flex flex-col items-center justify-center gap-2 opacity-50">
                                                             <RefreshCw className="h-6 w-6 animate-spin text-primary" />
                                                             <p className="text-[10px] font-bold uppercase tracking-widest">Updating results...</p>
@@ -153,15 +155,15 @@ export default function CptPricingPage() {
                                                         animate={{ opacity: 1, y: 0 }}
                                                         className="transition-colors border-b border-border/50 hover:bg-primary/[0.02]"
                                                     >
-                                                        {row.map((cell, idx) => (
+                                                        {row.filter((_, i) => DISPLAY_INDICES.includes(i)).map((cell, idx) => (
                                                             <TableCell 
                                                                 key={idx}
                                                                 className={`
                                                                     py-3 text-[11px] sm:text-sm text-center
                                                                     ${idx === 0 ? "font-mono font-bold text-primary pl-2 sm:pl-6 text-left" : ""}
-                                                                    ${idx === 1 ? "font-medium text-[#455A64] text-left max-w-[180px] sm:max-w-[300px] whitespace-normal break-words" : ""}
+                                                                    ${idx === 1 ? "font-medium text-[#455A64] text-left max-w-[180px] sm:max-w-[400px] whitespace-normal break-words" : ""}
                                                                     ${idx > 1 ? "font-semibold text-green-600/90 tabular-nums px-1 sm:px-3" : ""}
-                                                                    ${idx === row.length - 1 ? "pr-2 sm:pr-6 text-right" : ""}
+                                                                    ${idx === 4 ? "pr-2 sm:pr-6 text-right" : ""}
                                                                 `}
                                                             >
                                                                 {idx === 0 ? formatCode(cell) : idx > 1 ? formatCurrency(cell) : cell}
@@ -171,7 +173,7 @@ export default function CptPricingPage() {
                                                 ))
                                             ) : (
                                                 <TableRow>
-                                                    <TableCell colSpan={headers.length} className="h-32 text-center text-muted-foreground font-medium">
+                                                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground font-medium">
                                                         No standard pricing data found for "{searchTerm}".
                                                     </TableCell>
                                                 </TableRow>
