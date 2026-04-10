@@ -6,8 +6,8 @@ import pricingData from "@/data/cpt-pricing.json"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Input } from "@/components/ui/input"
-import { Search } from "lucide-react"
-import { motion } from "framer-motion"
+import { Search, RefreshCw } from "lucide-react"
+import { motion, AnimatePresence } from "framer-motion"
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -41,6 +41,17 @@ export default function CptPricingPage() {
     const rows = pricingData.slice(1) as string[][];
 
     const [searchTerm, setSearchTerm] = useState("");
+    const [isPending, setIsPending] = useState(false);
+
+    React.useEffect(() => {
+        if (searchTerm) {
+            setIsPending(true)
+            const timer = setTimeout(() => setIsPending(false), 300)
+            return () => clearTimeout(timer)
+        } else {
+            setIsPending(false)
+        }
+    }, [searchTerm])
 
     const filteredRows = React.useMemo(() => {
         if (!searchTerm) return rows;
@@ -78,15 +89,24 @@ export default function CptPricingPage() {
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <Input 
                                         placeholder="Search Code or Description..." 
-                                        className="pl-9 bg-background shadow-sm"
+                                        className="pl-9 pr-9 bg-background shadow-sm"
                                         value={searchTerm}
                                         onChange={(e) => setSearchTerm(e.target.value)}
                                     />
+                                    {isPending && (
+                                        <motion.div 
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2"
+                                        >
+                                            <RefreshCw className="h-3 w-3 animate-spin text-primary" />
+                                        </motion.div>
+                                    )}
                                 </div>
                             </div>
                         </CardHeader>
                         <CardContent className="p-0">
-                            <div className="overflow-x-auto">
+                            <div className="w-full">
                                 <Table>
                                     <TableHeader className="bg-muted/10">
                                         <TableRow className="hover:bg-transparent">
@@ -94,8 +114,8 @@ export default function CptPricingPage() {
                                                 <TableHead 
                                                     key={idx} 
                                                     className={`
-                                                        font-black uppercase tracking-widest text-[#2D3142] py-4 text-xs whitespace-nowrap
-                                                        ${idx === 0 ? "pl-6 w-[100px]" : ""}
+                                                        font-black uppercase tracking-widest text-[#2D3142] py-4 text-xs
+                                                        ${idx === 0 ? "pl-6" : ""}
                                                         ${idx > 1 ? "text-right" : ""}
                                                         ${idx === headers.length - 1 ? "pr-6" : ""}
                                                     `}
@@ -106,38 +126,48 @@ export default function CptPricingPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {filteredRows.length > 0 ? (
-                                            filteredRows.map((row, i) => (
-                                                <motion.tr 
-                                                    key={`row-${i}`}
-                                                    initial={{ opacity: 0 }}
-                                                    animate={{ opacity: 1 }}
-                                                    className="transition-colors border-b border-border/50 hover:bg-primary/[0.02]"
-                                                >
-                                                    {row.map((cell, idx) => (
-                                                        <TableCell 
-                                                            key={idx}
-                                                            className={`
-                                                                py-3.5 text-sm
-                                                                ${idx === 0 ? "font-mono font-bold text-primary pl-6" : ""}
-                                                                ${idx === 1 ? "font-medium text-[#455A64] max-w-[250px] truncate" : ""}
-                                                                ${idx > 1 ? "text-right font-semibold text-green-600/90 tabular-nums" : ""}
-                                                                ${idx === row.length - 1 ? "pr-6" : ""}
-                                                            `}
-                                                            title={idx === 1 ? cell : undefined}
-                                                        >
-                                                            {idx === 0 ? formatCode(cell) : idx > 1 ? formatCurrency(cell) : cell}
-                                                        </TableCell>
-                                                    ))}
-                                                </motion.tr>
-                                            ))
-                                        ) : (
-                                            <TableRow>
-                                                <TableCell colSpan={headers.length} className="h-32 text-center text-muted-foreground font-medium">
-                                                    No standard pricing data found for "{searchTerm}".
-                                                </TableCell>
-                                            </TableRow>
-                                        )}
+                                        <AnimatePresence mode="popLayout">
+                                            {isPending ? (
+                                                <TableRow key="loading">
+                                                    <TableCell colSpan={headers.length} className="h-32 text-center border-b-0">
+                                                        <div className="flex flex-col items-center justify-center gap-2 opacity-50">
+                                                            <RefreshCw className="h-6 w-6 animate-spin text-primary" />
+                                                            <p className="text-[10px] font-bold uppercase tracking-widest">Updating results...</p>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ) : filteredRows.length > 0 ? (
+                                                filteredRows.map((row, i) => (
+                                                    <motion.tr 
+                                                        key={`row-${i}`}
+                                                        initial={{ opacity: 0, y: 4 }}
+                                                        animate={{ opacity: 1, y: 0 }}
+                                                        className="transition-colors border-b border-border/50 hover:bg-primary/[0.02]"
+                                                    >
+                                                        {row.map((cell, idx) => (
+                                                            <TableCell 
+                                                                key={idx}
+                                                                className={`
+                                                                    py-3.5 text-sm
+                                                                    ${idx === 0 ? "font-mono font-bold text-primary pl-6" : ""}
+                                                                    ${idx === 1 ? "font-medium text-[#455A64]" : ""}
+                                                                    ${idx > 1 ? "text-right font-semibold text-green-600/90 tabular-nums" : ""}
+                                                                    ${idx === row.length - 1 ? "pr-6" : ""}
+                                                                `}
+                                                            >
+                                                                {idx === 0 ? formatCode(cell) : idx > 1 ? formatCurrency(cell) : cell}
+                                                            </TableCell>
+                                                        ))}
+                                                    </motion.tr>
+                                                ))
+                                            ) : (
+                                                <TableRow>
+                                                    <TableCell colSpan={headers.length} className="h-32 text-center text-muted-foreground font-medium">
+                                                        No standard pricing data found for "{searchTerm}".
+                                                    </TableCell>
+                                                </TableRow>
+                                            )}
+                                        </AnimatePresence>
                                     </TableBody>
                                 </Table>
                             </div>
