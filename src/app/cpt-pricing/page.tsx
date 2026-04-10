@@ -36,6 +36,15 @@ const formatCurrency = (val: string) => {
     return `$${num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
+const shortenHeader = (header: string) => {
+    if (header.includes("Percentile")) {
+        return header.replace("Percentile ($)", "($)").replace(" Percentile", "").trim();
+    }
+    if (header === "Medicare Fee MPFS") return "MPFS ($)";
+    if (header === "PIP MVA") return "PIP ($)";
+    return header;
+}
+
 export default function CptPricingPage() {
     const headers = pricingData[0] as string[];
     const rows = pricingData.slice(1) as string[][];
@@ -114,13 +123,13 @@ export default function CptPricingPage() {
                                                 <TableHead 
                                                     key={idx} 
                                                     className={`
-                                                        font-black uppercase tracking-widest text-[#2D3142] py-4 text-xs
-                                                        ${idx === 0 ? "pl-6" : ""}
-                                                        ${idx > 1 ? "text-right" : ""}
-                                                        ${idx === headers.length - 1 ? "pr-6" : ""}
+                                                        font-black uppercase tracking-widest text-[#2D3142] py-4 text-[10px] sm:text-xs text-center
+                                                        ${idx === 0 ? "pl-2 sm:pl-6 text-left" : ""}
+                                                        ${idx === 1 ? "text-left" : ""}
+                                                        ${idx === headers.length - 1 ? "pr-2 sm:pr-6 text-right" : ""}
                                                     `}
                                                 >
-                                                    {header}
+                                                    {shortenHeader(header)}
                                                 </TableHead>
                                             ))}
                                         </TableRow>
@@ -148,11 +157,11 @@ export default function CptPricingPage() {
                                                             <TableCell 
                                                                 key={idx}
                                                                 className={`
-                                                                    py-3.5 text-sm
-                                                                    ${idx === 0 ? "font-mono font-bold text-primary pl-6" : ""}
-                                                                    ${idx === 1 ? "font-medium text-[#455A64]" : ""}
-                                                                    ${idx > 1 ? "text-right font-semibold text-green-600/90 tabular-nums" : ""}
-                                                                    ${idx === row.length - 1 ? "pr-6" : ""}
+                                                                    py-3 text-[11px] sm:text-sm text-center
+                                                                    ${idx === 0 ? "font-mono font-bold text-primary pl-2 sm:pl-6 text-left" : ""}
+                                                                    ${idx === 1 ? "font-medium text-[#455A64] text-left min-w-[120px] max-w-[200px]" : ""}
+                                                                    ${idx > 1 ? "font-semibold text-green-600/90 tabular-nums px-1 sm:px-3" : ""}
+                                                                    ${idx === row.length - 1 ? "pr-2 sm:pr-6 text-right" : ""}
                                                                 `}
                                                             >
                                                                 {idx === 0 ? formatCode(cell) : idx > 1 ? formatCurrency(cell) : cell}
