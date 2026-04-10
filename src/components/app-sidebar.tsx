@@ -19,7 +19,8 @@ import {
     BrainCircuit,
     FileBarChart,
     LayoutDashboard,
-    Zap
+    Zap,
+    DollarSign
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -33,6 +34,7 @@ const items = [
     { title: "CPT Trends", url: "/cpt", icon: Activity },
     { title: "Payer Portfolio", url: "/insurance", icon: ShieldPlus },
     { title: "Max Paid", url: "/max-paid", icon: Zap },
+    { title: "CPT Pricing", url: "/cpt-pricing", icon: DollarSign },
     { title: "Status Breakdown", url: "/insights", icon: BrainCircuit },
     { title: "Raw Data", url: "/reports", icon: FileBarChart },
 ]
