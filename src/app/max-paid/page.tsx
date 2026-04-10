@@ -7,7 +7,8 @@ import { GlobalFilters } from "@/components/global-filters"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Trophy, ChevronDown, ChevronUp } from "lucide-react"
+import { Input } from "@/components/ui/input"
+import { Trophy, ChevronDown, ChevronUp, Search } from "lucide-react"
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -25,6 +26,7 @@ const itemVariants = {
 export default function MaxPaidPage() {
     const { filteredClaims, claims } = useData()
     const [expandedCpt, setExpandedCpt] = useState<string | null>(null)
+    const [cptSearch, setCptSearch] = useState("")
 
     const maxPaidData = useMemo(() => {
         // map[cpt][insurance] = maxPaid
@@ -68,6 +70,11 @@ export default function MaxPaidPage() {
         }).sort((a, b) => b.highestPaid - a.highestPaid);
     }, [filteredClaims])
 
+    const filteredMaxPaidData = useMemo(() => {
+        if (!cptSearch) return maxPaidData;
+        return maxPaidData.filter(row => row.cpt.toLowerCase().includes(cptSearch.toLowerCase()));
+    }, [maxPaidData, cptSearch]);
+
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
     }
@@ -86,12 +93,25 @@ export default function MaxPaidPage() {
                 <motion.div variants={itemVariants}>
                     <Card className="flex flex-col border-primary/10 shadow-md">
                         <CardHeader className="bg-muted/30 pb-4 border-b border-border/50">
-                            <div className="flex items-center gap-2">
-                                <CardTitle>Maximum Reimbursement</CardTitle>
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <CardTitle>Maximum Reimbursement</CardTitle>
+                                    </div>
+                                    <CardDescription className="mt-1.5">
+                                        Track all insurance companies that paid for each individual CPT code, ranked from highest to lowest amount paid.
+                                    </CardDescription>
+                                </div>
+                                <div className="relative w-full sm:w-64 shrink-0">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input 
+                                        placeholder="Search CPT..." 
+                                        className="pl-9 bg-background shadow-sm"
+                                        value={cptSearch}
+                                        onChange={(e) => setCptSearch(e.target.value)}
+                                    />
+                                </div>
                             </div>
-                            <CardDescription>
-                                Track all insurance companies that paid for each individual CPT code, ranked from highest to lowest amount paid.
-                            </CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
                             <div className="overflow-x-auto">
@@ -104,8 +124,8 @@ export default function MaxPaidPage() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                        {maxPaidData.length > 0 ? (
-                                            maxPaidData.map((row, i) => (
+                                        {filteredMaxPaidData.length > 0 ? (
+                                            filteredMaxPaidData.map((row, i) => (
                                                 <React.Fragment key={`cpt-${i}`}>
                                                     <TableRow 
                                                         className={`transition-colors border-b border-border/50 cursor-pointer group hover:bg-primary/[0.03] ${expandedCpt === row.cpt ? 'bg-primary/[0.02]' : ''}`}
