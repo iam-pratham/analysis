@@ -71,7 +71,8 @@ export default function MaxPaidPage() {
             const insurances = map[cpt];
             const sortedInsurances = Object.keys(insurances)
                 .map(ins => ({ insurance: ins, maxPaid: insurances[ins] }))
-                .sort((a, b) => b.maxPaid - a.maxPaid);
+                .sort((a, b) => b.maxPaid - a.maxPaid)
+                .slice(0, 15);
             
             return {
                 cpt,
@@ -110,7 +111,7 @@ export default function MaxPaidPage() {
                                         <CardTitle>Maximum Reimbursement</CardTitle>
                                     </div>
                                     <CardDescription className="mt-1.5">
-                                        Track all insurance companies that paid for each individual CPT code, ranked from highest to lowest amount paid.
+                                        Track the top 15 insurance companies that paid for each individual CPT code, ranked from highest to lowest amount paid.
                                     </CardDescription>
                                 </div>
                                 <div className="relative w-full sm:w-64 shrink-0">
@@ -199,7 +200,7 @@ export default function MaxPaidPage() {
                                                                     >
                                                                         <div className="px-14 py-4 space-y-3">
                                                                             <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                                                                                All Ranked Insurances
+                                                                                Top 15 Insurances
                                                                             </h4>
                                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                                                 {row.topInsurances.map((ins, idx) => (
