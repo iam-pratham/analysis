@@ -57,8 +57,7 @@ export default function MaxPaidPage() {
             const insurances = map[cpt];
             const sortedInsurances = Object.keys(insurances)
                 .map(ins => ({ insurance: ins, maxPaid: insurances[ins] }))
-                .sort((a, b) => b.maxPaid - a.maxPaid)
-                .slice(0, 10);
+                .sort((a, b) => b.maxPaid - a.maxPaid);
             
             return {
                 cpt,
@@ -90,7 +89,7 @@ export default function MaxPaidPage() {
                                 <CardTitle>Maximum Reimbursement</CardTitle>
                             </div>
                             <CardDescription>
-                                Track the top 10 insurance companies that paid the highest amount for each individual CPT code.
+                                Track all insurance companies that paid for each individual CPT code, ranked from highest to lowest amount paid.
                             </CardDescription>
                         </CardHeader>
                         <CardContent className="p-0">
@@ -147,7 +146,7 @@ export default function MaxPaidPage() {
                                                                     >
                                                                         <div className="px-14 py-4 space-y-3">
                                                                             <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                                                                                Top 10 Insurances
+                                                                                All Ranked Insurances
                                                                             </h4>
                                                                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                                                                 {row.topInsurances.map((ins, idx) => (
