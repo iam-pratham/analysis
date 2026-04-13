@@ -11,12 +11,12 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Wallet, CalendarIcon, TrendingUp, DollarSign, Activity, FileWarning, SearchX } from "lucide-react"
 import { GlobalFilters } from "@/components/global-filters"
 
-const containerVariants = {
+const containerVariants: any = {
     hidden: { opacity: 0 },
     show: { opacity: 1, transition: { staggerChildren: 0.1 } }
 }
 
-const itemVariants = {
+const itemVariants: any = {
     hidden: { opacity: 0, y: 20 },
     show: { opacity: 1, y: 0, transition: { type: "spring", stiffness: 300, damping: 24 } }
 }
