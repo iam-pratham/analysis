@@ -212,16 +212,16 @@ export default function ProviderPage() {
                 animate="show"
                 className="grid gap-6 md:grid-cols-2"
             >
-                <motion.div variants={itemVariants}>
-                    <Card className="flex flex-col">
+                <motion.div variants={itemVariants} className="h-full">
+                    <Card className="flex flex-col h-full">
                         <CardHeader>
                             <CardTitle>Total Claims by Provider</CardTitle>
                         </CardHeader>
-                        <CardContent className="flex-1 pb-4">
-                            <ChartContainer config={volumeConfig} className="min-h-[400px] w-full">
-                                <BarChart accessibilityLayer data={providerData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 80, left: 0, bottom: 5 }}>
+                        <CardContent className="flex-1 pb-4 w-full h-full">
+                            <ChartContainer config={volumeConfig} className="min-h-[400px] w-full h-full">
+                                <BarChart accessibilityLayer data={providerData.slice(0, 10)} layout="vertical" margin={{ top: 5, right: 120, left: 0, bottom: 5 }}>
                                     <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} strokeOpacity={0.2} />
-                                    <XAxis type="number" tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
+                                    <XAxis type="number" domain={[0, (dataMax: number) => dataMax === 0 ? 1 : Math.ceil(dataMax * 1.3)]} tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                     <YAxis type="category" dataKey="name" width={140} tickLine={false} axisLine={false} style={{ fontSize: "11px", fill: "var(--color-muted-foreground)" }} />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent indicator="line" />} />
                                     <Bar dataKey="claims" radius={[0, 4, 4, 0]} maxBarSize={40}>
@@ -369,20 +369,20 @@ export default function ProviderPage() {
                 initial="hidden"
                 animate="show"
             >
-                <motion.div variants={itemVariants}>
-                    <Card className="flex flex-col">
+                <motion.div variants={itemVariants} className="h-full">
+                    <Card className="flex flex-col h-full">
                         <CardHeader>
                             <CardTitle>Top CPT Codes Used</CardTitle>
                             <CardDescription>Most frequently billed procedure codes for selected providers</CardDescription>
                         </CardHeader>
-                        <CardContent className="flex-1 pb-4">
+                        <CardContent className="flex-1 pb-4 w-full h-full">
                             <ChartContainer config={{
                                 usage: {
                                     label: "Total Usage",
                                     color: "var(--color-primary)",
                                 }
-                            }} className="min-h-[400px] w-full">
-                                <BarChart accessibilityLayer data={cptData.slice(0, 15)} margin={{ top: 20, right: 30, left: 0, bottom: 5 }}>
+                            }} className="min-h-[400px] w-full h-full">
+                                <BarChart accessibilityLayer data={cptData.slice(0, 15)} margin={{ top: 40, right: 30, left: 0, bottom: 5 }}>
                                     <CartesianGrid vertical={false} strokeDasharray="3 3" strokeOpacity={0.2} />
                                     <XAxis
                                         dataKey="cpt"
@@ -394,7 +394,7 @@ export default function ProviderPage() {
                                         height={60}
                                         style={{ fill: "var(--color-muted-foreground)" }}
                                     />
-                                    <YAxis tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
+                                    <YAxis type="number" domain={[0, (dataMax: number) => dataMax === 0 ? 1 : Math.ceil(dataMax * 1.2)]} tickLine={false} axisLine={false} tickMargin={10} style={{ fill: "var(--color-muted-foreground)" }} />
                                     <ChartTooltip cursor={{ fill: 'var(--color-primary)', opacity: 0.1 }} content={<ChartTooltipContent />} />
                                     <Bar dataKey="usage" radius={[4, 4, 0, 0]}>
                                         {cptData.slice(0, 15).map((entry, index) => (

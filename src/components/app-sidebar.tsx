@@ -20,7 +20,8 @@ import {
     FileBarChart,
     LayoutDashboard,
     Zap,
-    DollarSign
+    DollarSign,
+    Wallet
 } from "lucide-react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -31,6 +32,7 @@ const items = [
     { title: "Data Import", url: "/upload", icon: UploadCloud },
     { title: "Claims Overview", url: "/", icon: LayoutDashboard },
     { title: "Provider Performance", url: "/provider", icon: Users },
+    { title: "Collections", url: "/collection", icon: Wallet },
     { title: "CPT Trends", url: "/cpt", icon: Activity },
     { title: "Payer Portfolio", url: "/insurance", icon: ShieldPlus },
     { title: "Max Paid", url: "/max-paid", icon: Zap },
