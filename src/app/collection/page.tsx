@@ -28,7 +28,7 @@ const monthMap: Record<string, number> = {
 }
 
 export default function CollectionPage() {
-    const { filteredClaims, claims } = useData()
+    const { filteredClaims, claims, filters } = useData()
 
     // 1. Extract Providers from Filtered Claims
     const providersFromFilteredClaims = useMemo(() => {
