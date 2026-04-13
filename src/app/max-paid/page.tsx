@@ -79,7 +79,9 @@ export default function MaxPaidPage() {
                 topInsurances: sortedInsurances,
                 highestPaid: sortedInsurances[0]?.maxPaid || 0,
             }
-        }).sort((a, b) => b.highestPaid - a.highestPaid);
+        })
+        .filter(row => row.cpt !== "INTPT" && row.cpt !== "OVPMT")
+        .sort((a, b) => b.highestPaid - a.highestPaid);
     }, [filteredClaims])
 
     const filteredMaxPaidData = useMemo(() => {

@@ -45,11 +45,14 @@ const shortenHeader = (header: string) => {
     return header;
 }
 
-const DISPLAY_INDICES = [0, 1, 6, 7, 8];
+const DISPLAY_INDICES = [0, 1, 6, 7, 8, 9];
 
 export default function CptPricingPage() {
     const headers = pricingData[0] as string[];
-    const rows = pricingData.slice(1) as string[][];
+    const rows = (pricingData.slice(1) as string[][]).filter(row => {
+        const code = formatCode(row[0]);
+        return code !== "INTPT" && code !== "OVPMT";
+    });
 
     const [searchTerm, setSearchTerm] = useState("");
     const [isPending, setIsPending] = useState(false);
@@ -128,7 +131,7 @@ export default function CptPricingPage() {
                                                         font-black uppercase tracking-widest text-[#2D3142] py-4 text-[10px] sm:text-xs text-center
                                                         ${idx === 0 ? "pl-2 sm:pl-6 text-left" : ""}
                                                         ${idx === 1 ? "text-left" : ""}
-                                                        ${idx === 4 ? "pr-2 sm:pr-6 text-right" : ""}
+                                                        ${idx === 5 ? "pr-2 sm:pr-6 text-right" : ""}
                                                     `}
                                                 >
                                                     {shortenHeader(header)}
@@ -140,7 +143,7 @@ export default function CptPricingPage() {
                                         <AnimatePresence mode="popLayout">
                                             {isPending ? (
                                                 <TableRow key="loading">
-                                                    <TableCell colSpan={5} className="h-32 text-center border-b-0">
+                                                    <TableCell colSpan={6} className="h-32 text-center border-b-0">
                                                         <div className="flex flex-col items-center justify-center gap-2 opacity-50">
                                                             <RefreshCw className="h-6 w-6 animate-spin text-primary" />
                                                             <p className="text-[10px] font-bold uppercase tracking-widest">Updating results...</p>
@@ -163,7 +166,7 @@ export default function CptPricingPage() {
                                                                     ${idx === 0 ? "font-mono font-bold text-primary pl-2 sm:pl-6 text-left" : ""}
                                                                     ${idx === 1 ? "font-medium text-[#455A64] text-left max-w-[180px] sm:max-w-[400px] whitespace-normal break-words" : ""}
                                                                     ${idx > 1 ? "font-semibold text-green-600/90 tabular-nums px-1 sm:px-3" : ""}
-                                                                    ${idx === 4 ? "pr-2 sm:pr-6 text-right" : ""}
+                                                                    ${idx === 5 ? "pr-2 sm:pr-6 text-right" : ""}
                                                                 `}
                                                             >
                                                                 {idx === 0 ? formatCode(cell) : idx > 1 ? formatCurrency(cell) : cell}
@@ -173,7 +176,7 @@ export default function CptPricingPage() {
                                                 ))
                                             ) : (
                                                 <TableRow>
-                                                    <TableCell colSpan={5} className="h-32 text-center text-muted-foreground font-medium">
+                                                    <TableCell colSpan={6} className="h-32 text-center text-muted-foreground font-medium">
                                                         No standard pricing data found for "{searchTerm}".
                                                     </TableCell>
                                                 </TableRow>
