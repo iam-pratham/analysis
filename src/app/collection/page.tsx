@@ -112,7 +112,18 @@ export default function CollectionPage() {
                 mon = parts[0].substring(0, 3)
                 yy = parts[1].substring(2, 4)
             }
+
+            const mNum = monthMap[mon]
             
+            // Respect Global Month Filter if applied
+            if (filters.month) { // Format: "yyyy-mm"
+                const [fYear, fMonth] = filters.month.split('-')
+                const fYy = fYear.substring(2, 4) // "25"
+                if (yy !== fYy || mNum !== Number(fMonth)) {
+                    return // Skip this row if it doesn't match the selected month
+                }
+            }
+
             let monthlyAgg = 0;
 
             activeCollectionKeys.forEach(providerKey => {
@@ -155,7 +166,7 @@ export default function CollectionPage() {
             monthlyData: mData,
             providerBreakdown: pData
         }
-    }, [activeCollectionKeys])
+    }, [activeCollectionKeys, filters.month])
 
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
