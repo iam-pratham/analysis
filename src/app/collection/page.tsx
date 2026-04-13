@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useMemo } from "react"
+import React, { useMemo, useState } from "react"
 import { useData } from "@/context/data-context"
 import { PageHeader } from "@/components/page-header"
 import collectionData from "@/data/collection_data.json"
@@ -10,6 +10,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { motion, AnimatePresence } from "framer-motion"
 import { Wallet, CalendarIcon, TrendingUp, DollarSign, Activity, FileWarning, SearchX } from "lucide-react"
 import { GlobalFilters } from "@/components/global-filters"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const containerVariants: any = {
     hidden: { opacity: 0 },
@@ -28,19 +29,23 @@ const monthMap: Record<string, number> = {
 }
 
 export default function CollectionPage() {
-    const { filteredClaims, claims, filters } = useData()
+    const { claims, filters } = useData()
+    const [collectionMonth, setCollectionMonth] = useState<string>("all")
 
-    // 1. Extract Providers from Filtered Claims
-    const providersFromFilteredClaims = useMemo(() => {
+    // 1. Extract Providers from Claims safely
+    const providersFromClaims = useMemo(() => {
+        let validClaims = claims;
+        if (filters.provider) validClaims = validClaims.filter(c => c.doctorName === filters.provider);
+        if (filters.doctor) validClaims = validClaims.filter(c => c.doctorName === filters.doctor);
+
         const set = new Set<string>()
-        filteredClaims.forEach(c => {
+        validClaims.forEach(c => {
             if (c.doctorName) {
-                // Keep whole name to use strong matching
                 set.add(c.doctorName)
             }
         })
         return Array.from(set)
-    }, [filteredClaims])
+    }, [claims, filters.provider, filters.doctor])
 
     // 2. Find matching keys from JSON
     const availableCollectionKeys = useMemo(() => {
@@ -56,7 +61,7 @@ export default function CollectionPage() {
 
     const activeCollectionKeys = useMemo(() => {
         const matched = new Set<string>()
-        providersFromFilteredClaims.forEach(claimName => {
+        providersFromClaims.forEach(claimName => {
             const cleanClaimBase = claimName.split(' - ')[0].toLowerCase().replace(/[^a-z0-9 ]/g, '').trim()
             const claimWords = cleanClaimBase.split(' ').filter(w => w.length > 2 && !['dpt', 'dc', 'md', 'do', 'pt', 'ot'].includes(w))
             
@@ -72,7 +77,6 @@ export default function CollectionPage() {
                 claimWords.forEach(cw => {
                     if (keyWords.includes(cw)) matchCount++;
                 })
-                // If at least 1 significant word matches (e.g. Buckman, Berger)
                 return matchCount >= 1;
             })
 
@@ -81,7 +85,15 @@ export default function CollectionPage() {
             }
         })
         return Array.from(matched)
-    }, [providersFromFilteredClaims, availableCollectionKeys])
+    }, [providersFromClaims, availableCollectionKeys])
+
+    // Local explicit extraction of raw months available directly in the file
+    const fileAvailableMonths = useMemo(() => {
+        if (!collectionData) return []
+        return collectionData
+            .map((row: any) => row['__EMPTY'])
+            .filter((m: any) => m && String(m).toLowerCase() !== 'total') as string[]
+    }, [])
 
     // 3. Process Data for Aggregated Selected Providers
     const { totalTillNow, year2025, year2026, quarterly, monthlyData, providerBreakdown } = useMemo(() => {
@@ -115,13 +127,9 @@ export default function CollectionPage() {
 
             const mNum = monthMap[mon]
             
-            // Respect Global Month Filter if applied
-            if (filters.month) { // Format: "yyyy-mm"
-                const [fYear, fMonth] = filters.month.split('-')
-                const fYy = fYear.substring(2, 4) // "25"
-                if (yy !== fYy || mNum !== Number(fMonth)) {
-                    return // Skip this row if it doesn't match the selected month
-                }
+            // Respect Dedicated Collection Month Filter seamlessly
+            if (collectionMonth !== 'all') {
+                if (rawMonth !== collectionMonth) return
             }
 
             let monthlyAgg = 0;
@@ -166,7 +174,7 @@ export default function CollectionPage() {
             monthlyData: mData,
             providerBreakdown: pData
         }
-    }, [activeCollectionKeys, filters.month])
+    }, [activeCollectionKeys, collectionMonth])
 
     if (claims.length === 0) {
         return <div className="p-6">Navigate to Upload page to load data.</div>
@@ -177,6 +185,23 @@ export default function CollectionPage() {
             <PageHeader title="Provider Collection Details" />
 
             <GlobalFilters />
+
+            <div className="flex items-center gap-4 bg-card/50 backdrop-blur-xl p-4 rounded-2xl border border-border/50 shadow-sm transition-all duration-300">
+                <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">Collection Report Month:</span>
+                <div className="w-[200px]">
+                    <Select value={collectionMonth} onValueChange={setCollectionMonth}>
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="All Months" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">All Months (Aggregate)</SelectItem>
+                            {fileAvailableMonths.map(m => (
+                                <SelectItem key={m} value={m}>{m}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </div>
+            </div>
 
             {activeCollectionKeys.length === 0 ? (
                 <Card className="bg-destructive/5 border-destructive/20 h-40 flex flex-col items-center justify-center text-center">
