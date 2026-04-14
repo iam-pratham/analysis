@@ -44,7 +44,7 @@ export function LayoutWrapper({ children }: { children: React.ReactNode }) {
                                     <SidebarTrigger />
                                 </div>
                             </header>
-                            <div className="flex-1 bg-transparent overflow-auto pb-16">
+                            <div className="flex-1 bg-transparent overflow-auto pb-4">
                                 {children}
                             </div>
                         </main>

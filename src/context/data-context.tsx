@@ -41,6 +41,7 @@ interface DataContextProps {
     filters: FilterState;
     setFilters: React.Dispatch<React.SetStateAction<FilterState>>;
     filteredClaims: Claim[];
+    cleanedClaims: Claim[];
 }
 
 const DataContext = createContext<DataContextProps | undefined>(undefined);
@@ -58,8 +59,8 @@ export function DataProvider({ children }: { children: ReactNode }) {
         dateEnd: null,
     });
 
-    const filteredClaims = React.useMemo(() => {
-        const cleanedClaims = claims.map(c => {
+    const cleanedClaims = React.useMemo(() => {
+        return claims.map(c => {
             // Apply naming fixes according to user request
             let newIns = c.insuranceType;
             const insLower = (newIns || "").toLowerCase();
@@ -153,7 +154,9 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 cptDetails: cleanCptDetails
             };
         });
+    }, [claims]);
 
+    const filteredClaims = React.useMemo(() => {
         return cleanedClaims.filter((claim) => {
             if (filters.provider && claim.doctorName !== filters.provider) return false;
             if (filters.doctor && claim.doctorName !== filters.doctor) return false;
@@ -173,7 +176,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
             }
             return true;
         });
-    }, [claims, filters]);
+    }, [cleanedClaims, filters]);
 
     return (
         <DataContext.Provider
@@ -185,6 +188,7 @@ export function DataProvider({ children }: { children: ReactNode }) {
                 filters,
                 setFilters,
                 filteredClaims,
+                cleanedClaims,
             }}
         >
             {children}

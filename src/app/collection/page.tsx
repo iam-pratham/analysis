@@ -9,7 +9,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LabelList, Cell, AreaChart,
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
 import { motion, AnimatePresence } from "framer-motion"
 import { Wallet, CalendarIcon, TrendingUp, DollarSign, Activity, FileWarning, SearchX } from "lucide-react"
-import { GlobalFilters } from "@/components/global-filters"
+import { CollectionGlobalFilters } from "@/components/collection-global-filters"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const containerVariants: any = {
@@ -29,12 +29,12 @@ const monthMap: Record<string, number> = {
 }
 
 export default function CollectionPage() {
-    const { claims, filters } = useData()
+    const { claims, cleanedClaims, filters } = useData()
     const [collectionMonth, setCollectionMonth] = useState<string>("all")
 
     // 1. Extract Providers from Claims safely
     const providersFromClaims = useMemo(() => {
-        let validClaims = claims;
+        let validClaims = cleanedClaims;
         if (filters.provider) validClaims = validClaims.filter(c => c.doctorName === filters.provider);
         if (filters.doctor) validClaims = validClaims.filter(c => c.doctorName === filters.doctor);
 
@@ -45,7 +45,7 @@ export default function CollectionPage() {
             }
         })
         return Array.from(set)
-    }, [claims, filters.provider, filters.doctor])
+    }, [cleanedClaims, filters.provider, filters.doctor])
 
     // 2. Find matching keys from JSON
     const availableCollectionKeys = useMemo(() => {
@@ -184,24 +184,11 @@ export default function CollectionPage() {
         <div className="p-6 max-w-7xl mx-auto space-y-6">
             <PageHeader title="Provider Collection Details" />
 
-            <GlobalFilters />
-
-            <div className="flex items-center gap-4 bg-card/50 backdrop-blur-xl p-4 rounded-2xl border border-border/50 shadow-sm transition-all duration-300">
-                <span className="text-sm font-semibold text-muted-foreground whitespace-nowrap">Collection Report Month:</span>
-                <div className="w-[200px]">
-                    <Select value={collectionMonth} onValueChange={setCollectionMonth}>
-                        <SelectTrigger className="w-full">
-                            <SelectValue placeholder="All Months" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">All Months (Aggregate)</SelectItem>
-                            {fileAvailableMonths.map(m => (
-                                <SelectItem key={m} value={m}>{m}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-            </div>
+            <CollectionGlobalFilters 
+                collectionMonth={collectionMonth} 
+                setCollectionMonth={setCollectionMonth} 
+                fileAvailableMonths={fileAvailableMonths} 
+            />
 
             {activeCollectionKeys.length === 0 ? (
                 <Card className="bg-destructive/5 border-destructive/20 h-40 flex flex-col items-center justify-center text-center">
@@ -383,7 +370,7 @@ export default function CollectionPage() {
                             </motion.div>
 
                             {/* Providers Distribution Graph */}
-                            <motion.div variants={itemVariants} className="h-full lg:col-span-2 pb-10">
+                            <motion.div variants={itemVariants} className="h-full lg:col-span-2">
                                 <Card className="flex flex-col h-full">
                                     <CardHeader>
                                         <CardTitle>Collection by Provider</CardTitle>
